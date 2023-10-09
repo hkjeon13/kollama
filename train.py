@@ -12,6 +12,7 @@ from transformers import (
     DataCollatorForSeq2Seq,
 )
 
+
 @dataclass
 class ModelParams:
     model_name_or_path: str = field(
@@ -113,8 +114,73 @@ class DataParams:
 def get_lora_model(
         model: PreTrainedModel,
         lora_config: LoraParams,
-        model_type: Literal["causal", "seq2seq"] = "causal"
+        model_type: Literal["causal", "seq2seq"] = "causal",
+        print_trainable_parameters: bool = True,
 ):
+    """
+    Get LoRA model
+    :param model:
+    :param lora_config:
+    :param model_type:
+    :return:
+
+    >>> from transformers import AutoModelForCausalLM
+    >>> model = AutoModelForCausalLM.from_pretrained("psyche/kogpt")
+    >>> from dataclasses import dataclass
+    >>> @dataclass
+    ... class LoraParams:
+    ...     apply_lora: bool = True
+    ...     lora_r: float = 64
+    ...     lora_alpha: float = 16
+    ...     lora_dropout: float = 0.1
+    >>> lora_config = LoraParams()
+    >>> model = get_lora_model(model, lora_config, print_trainable_parameters=False)
+    >>> model
+    PeftModelForCausalLM(
+      (base_model): LoraModel(
+        (model): GPT2LMHeadModel(
+          (transformer): GPT2Model(
+            (wte): Embedding(32002, 1536)
+            (wpe): Embedding(2048, 1536)
+            (drop): Dropout(p=0.1, inplace=False)
+            (h): ModuleList(
+              (0-11): 12 x GPT2Block(
+                (ln_1): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
+                (attn): GPT2Attention(
+                  (c_attn): Linear(
+                    in_features=1536, out_features=4608, bias=True
+                    (lora_dropout): ModuleDict(
+                      (default): Dropout(p=0.1, inplace=False)
+                    )
+                    (lora_A): ModuleDict(
+                      (default): Linear(in_features=1536, out_features=64, bias=False)
+                    )
+                    (lora_B): ModuleDict(
+                      (default): Linear(in_features=64, out_features=4608, bias=False)
+                    )
+                    (lora_embedding_A): ParameterDict()
+                    (lora_embedding_B): ParameterDict()
+                  )
+                  (c_proj): Conv1D()
+                  (attn_dropout): Dropout(p=0.1, inplace=False)
+                  (resid_dropout): Dropout(p=0.1, inplace=False)
+                )
+                (ln_2): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
+                (mlp): GPT2MLP(
+                  (c_fc): Conv1D()
+                  (c_proj): Conv1D()
+                  (act): NewGELUActivation()
+                  (dropout): Dropout(p=0.1, inplace=False)
+                )
+              )
+            )
+            (ln_f): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
+          )
+          (lm_head): Linear(in_features=1536, out_features=32002, bias=False)
+        )
+      )
+    )
+    """
     try:
         from peft import LoraConfig, TaskType, get_peft_model
     except ImportError:
@@ -128,15 +194,30 @@ def get_lora_model(
     )
 
     model = get_peft_model(model, lora_config)
-
-    model.print_trainable_parameters()
-    print("LoRA is applied to The Model!")
+    if print_trainable_parameters:
+        model.print_trainable_parameters()
     return model
 
 
 def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
+    """
+    Get additional config for bitsandbytes
+    :param bnb_config:
+    :return:
+        - additional_config: Dict[str, Any]
+    >>> from dataclasses import dataclass
+    >>> @dataclass
+    ... class BnBParams:
+    ...     apply_4bit_training: bool = True
+    ...     bnb_4bit_use_double_quant: bool = False
+    ...     bnb_4bit_quant_type: str = "nf4"
+    ...     bnb_4bit_compute_dtype: str = "float16"
+    >>> bnb_config = BnBParams()
+    >>> get_bnb_config(bnb_config)["quantization_config"].__class__.__name__
+    'BitsAndBytesConfig'
+    """
     additional_config = {}
-    if bnb_config.do_4bit_training:
+    if bnb_config.apply_4bit_training:
         import torch
         from transformers import BitsAndBytesConfig
 
