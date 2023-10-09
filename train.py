@@ -193,6 +193,24 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
 
 
 def get_data_collator(model, tokenizer, model_args):
+    """
+    Get data collator
+    :param model:
+    :param tokenizer:
+    :param model_args:
+    :return:
+
+    >>> from transformers import AutoTokenizer, AutoModelForCausalLM
+    >>> tokenizer = AutoTokenizer.from_pretrained("psyche/kogpt")
+    >>> model = AutoModelForCausalLM.from_pretrained("psyche/kogpt")
+    >>> from dataclasses import dataclass
+    >>> @dataclass
+    ... class ModelParams:
+    ...     model_type: str = "causal"
+    >>> model_args = ModelParams()
+    >>> get_data_collator(model, tokenizer, model_args).__class__.__name__
+    'DataCollatorForLanguageModeling'
+    """
     from inspect import signature
 
     collator_module = DataCollatorForLanguageModeling \
