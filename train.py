@@ -134,52 +134,9 @@ def get_lora_model(
     ...     lora_alpha: float = 16
     ...     lora_dropout: float = 0.1
     >>> lora_config = LoraParams()
-    >>> model = get_lora_model(model, lora_config, print_trainable_parameters=False)
-    >>> model
-    PeftModelForCausalLM(
-      (base_model): LoraModel(
-        (model): GPT2LMHeadModel(
-          (transformer): GPT2Model(
-            (wte): Embedding(32002, 1536)
-            (wpe): Embedding(2048, 1536)
-            (drop): Dropout(p=0.1, inplace=False)
-            (h): ModuleList(
-              (0-11): 12 x GPT2Block(
-                (ln_1): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
-                (attn): GPT2Attention(
-                  (c_attn): Linear(
-                    in_features=1536, out_features=4608, bias=True
-                    (lora_dropout): ModuleDict(
-                      (default): Dropout(p=0.1, inplace=False)
-                    )
-                    (lora_A): ModuleDict(
-                      (default): Linear(in_features=1536, out_features=64, bias=False)
-                    )
-                    (lora_B): ModuleDict(
-                      (default): Linear(in_features=64, out_features=4608, bias=False)
-                    )
-                    (lora_embedding_A): ParameterDict()
-                    (lora_embedding_B): ParameterDict()
-                  )
-                  (c_proj): Conv1D()
-                  (attn_dropout): Dropout(p=0.1, inplace=False)
-                  (resid_dropout): Dropout(p=0.1, inplace=False)
-                )
-                (ln_2): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
-                (mlp): GPT2MLP(
-                  (c_fc): Conv1D()
-                  (c_proj): Conv1D()
-                  (act): NewGELUActivation()
-                  (dropout): Dropout(p=0.1, inplace=False)
-                )
-              )
-            )
-            (ln_f): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
-          )
-          (lm_head): Linear(in_features=1536, out_features=32002, bias=False)
-        )
-      )
-    )
+    >>> model = get_lora_model(model, lora_config, model_type="causal", print_trainable_parameters=False)
+    >>> model.__class__.__name__
+    'PeftModelForCausalLM'
     """
     try:
         from peft import LoraConfig, TaskType, get_peft_model
