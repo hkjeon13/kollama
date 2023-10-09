@@ -167,7 +167,7 @@ def get_data_collator(model, tokenizer, model_args):
     collator_args = {
         key: candidates.get(key) for key in para_names if key in candidates
     }
-    
+
     return collator_module(**collator_args)
 
 
@@ -230,7 +230,8 @@ def main():
         training_args.optim = "paged_adamw_32bit"
 
     trainer_callbacks = get_callbacks(model_args)
-    #TODO: add data download
+    # TODO: add data download
+    
     dataset = None
 
     trainer = Trainer(

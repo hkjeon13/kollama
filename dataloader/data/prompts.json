@@ -1,0 +1,251 @@
+[
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "{target_language}로 번역: {source}",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "번역({source_language} -> {target_language}): {source}",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "{source}, 위 내용을 {target_language}로 번역하면",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "{source} 를 {target_language}로 번역해줘!",
+      "output": "번역한 결과는 {target} 입니다."
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "{source_language} -> {target_language} 번역: {source}",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "'{source}'를 {target_language}로 번역하세요.",
+      "output": "번역한 결과는 '{target}' 입니다."
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "'{source}'에 대한 {target_language} 번역 결과는",
+      "output": "'{target}' 입니다."
+    }
+  },
+  {
+    "task": "translation",
+    "language": "ko",
+    "format": {
+      "input": "'{source}'와 '{target}'은",
+      "output": "같은 의미를 지녔습니다."
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language}",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} from {source_language} to {target_language}",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} for me",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "Translate {source} to {target_language} please",
+      "output": "The translation is {target}"
+    }
+  },
+  {
+    "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "{source}, it means in {target_language}, ",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "ko",
+    "format": {
+      "input": "{passage} 를 요약해줘",
+      "output": "{summary}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "ko",
+    "format": {
+      "input": "{passage} 를 요약하면, ",
+      "output": "{summary}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "ko",
+    "format": {
+      "input": "{passage} 를 요약해주세요",
+      "output": "{summary}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "ko",
+    "format": {
+      "input": "A:'{passage}' 과 B:'{summary}' 는",
+      "output": "원문(A)과 요약문(B)의 관계를 가집니다."
+    }
+  },
+  {
+    "task": "sentiment-classification",
+    "language": "ko",
+    "format": {
+      "input": "'{text}' 이 문장에서 드러난 감정은({names})?",
+      "output": "문장에서 드러난 감정은 '{category}' 입니다."
+    }
+  },
+  {
+    "task": "category-classification",
+    "language": "ko",
+    "format": {
+      "input": "'{text}' 이 문장의 범주는({names})?",
+      "output": "문장의 범주는 '{category}' 입니다."
+    }
+  },
+  {
+    "task": "mrc",
+    "language": "ko",
+    "format": {
+      "input": "{context} 라는 문맥에서 '{question}' 에 대한 답은?",
+      "output": "답은 '{answer}' 입니다."
+    }
+  },
+  {
+    "task": "mrc",
+    "language": "ko",
+    "format": {
+      "input": "'{question}'에 대한 답을 {context} 에서 찾아줘",
+      "output": "주어진 문맥에서 찾은 답은 '{answer}' 입니다."
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "en",
+    "format": {
+      "input": "{instruction}\n{input}?",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "en",
+    "format": {
+      "input": "Instruction: {instruction}\nInput: {input}, Output:",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "span-corruption",
+    "language": "ko",
+    "format": {
+      "input": "{text}",
+      "output": "{label}"
+    }
+  }
+
+]
