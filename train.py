@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union, Literal
+from typing import Any, Dict, Optional,Literal
 from dataclasses import dataclass, field
 from transformers import (
     HfArgumentParser,
@@ -7,7 +7,6 @@ from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
-    PreTrainedTokenizer,
     PreTrainedModel,
     DataCollatorForLanguageModeling,
     DataCollatorForSeq2Seq,
@@ -34,6 +33,12 @@ class ModelParams:
         metadata={"help": "The model type"}
     )
 
+    add_pad_token: bool = field(
+        default=False,
+        metadata={"help": "Whether to add pad token"}
+    )
+
+
 @dataclass
 class LoraParams:
     apply_lora: bool = field(
@@ -55,6 +60,7 @@ class LoraParams:
         default=0.1,
         metadata={"help": "The dropout value of LoRA"}
     )
+
 @dataclass
 class BnBParams:
     apply_4bit_training: bool = field(
@@ -151,19 +157,17 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
 def get_data_collator(model, tokenizer, model_args):
     from inspect import signature
 
-    collator_module = DataCollatorForLanguageModeling if model_args.model_type == "causal" else DataCollatorForSeq2Seq
-
+    collator_module = DataCollatorForLanguageModeling \
+        if model_args.model_type == "causal" else DataCollatorForSeq2Seq
     candidates = {
-        "tokenizer": tokenizer, "model": model,
-        "mlm": False, "pad_to_multiple_of": None
+        "tokenizer": tokenizer, "model": model, "mlm": False,
+        "pad_to_multiple_of": None
     }
-
+    para_names = signature(collator_module.__init__).parameters.keys()
     collator_args = {
-        key: candidates.get(key)
-        for key in signature(collator_module.__init__).parameters.keys()
-        if key in candidates
+        key: candidates.get(key) for key in para_names if key in candidates
     }
-
+    
     return collator_module(**collator_args)
 
 
@@ -199,6 +203,7 @@ def main():
         **additional_config
     )
 
+
     model_class = AutoModelForCausalLM \
         if model_args.model_type == "causal" else AutoModelForSeq2SeqLM
 
@@ -213,13 +218,19 @@ def main():
             model, model_args, model_type=model_args.model_type
         )
 
+    if model_args.add_pad_token:
+        from utils.tokenizer_utils import get_special_tokens
+        _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
+        tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
+        model = model.resize_token_embeddings(len(tokenizer))
+
     data_collator = get_data_collator(model, tokenizer, model_args)
 
     if bnb_config.do_4bit_training:
         training_args.optim = "paged_adamw_32bit"
 
     trainer_callbacks = get_callbacks(model_args)
-
+    #TODO: add data download
     dataset = None
 
     trainer = Trainer(

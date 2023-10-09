@@ -1,0 +1,1 @@
+FROM huggingface/transformers-pytorch-cpu
