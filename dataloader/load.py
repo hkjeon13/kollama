@@ -11,6 +11,14 @@ def load(
     is_supervised_dataset: bool = False,
     **kwargs
 ) -> Union[DatasetDict, IterableDatasetDict]:
+	"""
+    Load Dataset from the Huggingface-Hub, Local Storage.
+    If you set 'is_supervised_dataset' to 'True' and the 'data_name_or_path' is given as JSON file path,
+    The prompts added to the dataset (The prompt is the pre-defined string). 
+    >>> dataset = load("nsmc", streaming=False, is_supervised_dataset=False)
+    >>> dataset.__class__.__name__
+    'DatasetDict'
+    """
     if data_name_or_path.endswith(".json"):
         from dataloader.custom import load_datasets_from_json, SeqIO
         train_datasets = load_datasets_from_json(
