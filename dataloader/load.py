@@ -10,7 +10,7 @@ def load(
     streaming: bool = False,
     is_supervised_dataset: bool = False,
     **kwargs
-) -> Union[DatasetDict, IterableDatasetDict]:
+) -> Union[DatasetDict, IterableDatasetDict, Dataset, IterableDataset]:
 	"""
     Load Dataset from the Huggingface-Hub, Local Storage.
     If you set 'is_supervised_dataset' to 'True' and the 'data_name_or_path' is given as JSON file path,
