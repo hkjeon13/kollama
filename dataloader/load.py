@@ -34,6 +34,7 @@ def load(
             streaming=streaming,
             shuffle=False
         )
+        
         merge_method = kwargs.get("merging_method", "interleave")
         if is_supervised_dataset:
             seqio = SeqIO(
