@@ -294,6 +294,29 @@ class SeqIO:
 
 
 def translation_language_mapping(target, language_map:Dict[str, str]) -> dict:
+    """
+    Mapping the language code to the language name.
+    :param target:
+    :param language_map:
+    :return:
+    >>> from datasets import Dataset
+    >>> dataset = Dataset.from_list([{"source_language": "en", "target_language": "ko"}])
+    >>> target = {
+    ...     "task_type": "translation",
+    ...     "language": "ko",
+    ...     "dataset": dataset,
+    ...     "mapping_table": {
+    ...         "source_language": "source_language",
+    ...         "target_language": "target_language"
+    ...     }
+    ... }
+    >>> language_map = {"en": "English", "ko": "Korean"}
+    >>> translation_language_mapping(target, language_map)
+    {'task_type': 'translation', 'language': 'ko', 'dataset': Dataset({
+        features: ['source_language', 'target_language'],
+        num_rows: 1
+    }), 'mapping_table': {'source_language': 'source_language', 'target_language': 'target_language'}}
+    """
     lang_change = lambda x: language_map.get(x, x)
     _inv_mapping = {v: k for k, v in target["mapping_table"].items()}
     target["dataset"] = target["dataset"].map(
@@ -314,7 +337,7 @@ def _load_hf_dataset(data_name_or_path: str, data_auth_token: str, split="train"
     return load_dataset(
         *data_name_or_path.split(","),
         use_auth_token=data_auth_token,
-        streaming=True,
+        streaming=streaming,
         split=split
     )
 
@@ -325,8 +348,40 @@ def load_datasets_from_json(
         streaming: bool = False,
         shuffle: bool = False,
 ) -> List[Dict[str, Union[str, dict, AVAILABLE_DATASETS]]]:
-    with open(path, "r", encoding="utf-8") as f:
-        datalist = json.load(f)
+    """
+    Load datasets from JSON file.
+    :param path:
+    :param split:
+    :param streaming:
+    :param shuffle:
+    :return:
+    >>> data_list = [
+    ...    {
+    ...        "task_type": "translation",
+    ...        "language": "ko",
+    ...        "data_name_or_path": "psyche/nmt-sample",
+    ...        "data_auth_token": None,
+    ...        "train": "train",
+    ...        "validation": None,
+    ...        "mapping_table": {
+    ...            "source": "source",
+    ...            "target": "target",
+    ...            "source_language": "source_language",
+    ...            "target_language": "target_language"
+    ...        },
+    ...    }
+    ... ]
+    >>> load_datasets_from_json(data_list, split="train", streaming=False)
+    [{'task_type': 'translation', 'language': 'ko', 'dataset': Dataset({
+        features: ['source', 'target', 'source_language', 'target_language', 'category'],
+        num_rows: 3
+    }), 'mapping_table': {'source': 'source', 'target': 'target', 'source_language': 'source_language', 'target_language': 'target_language'}, 'kwargs': {}}]
+    """
+    if isinstance(path, str):
+        with open(path, "r", encoding="utf-8") as f:
+            datalist = json.load(f)
+    else:
+        datalist = path
     outputs = []
     for data in datalist:
         target = None
