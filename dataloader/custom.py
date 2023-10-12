@@ -2,10 +2,9 @@ import json
 import os
 import random
 import string
-from collections import defaultdict, OrderedDict
 from functools import partial
-from typing import Dict, List
-from typing import Union, Literal
+from collections import defaultdict, OrderedDict
+from typing import Dict, List, Union, Literal
 
 import numpy as np
 from datasets import (
@@ -15,7 +14,6 @@ from datasets import (
     interleave_datasets,
     load_dataset
 )
-
 
 COLUMNS = ("columns", "prompts")
 AVAILABLE_DATASETS = Union[Dataset, IterableDataset]
@@ -174,7 +172,8 @@ class SeqIO:
         ]
         candidates = [
             c for c in candidates
-            if len(self.params_in_format_string(" ".join(c.values())) - set(mapping_table.keys()).union(set(["names"]))) == 0
+            if len(self.params_in_format_string(" ".join(c.values())) - set(mapping_table.keys()).union(
+                set(["names"]))) == 0
         ]
 
         if len(candidates) == 0:
@@ -187,6 +186,7 @@ class SeqIO:
                     example[mapping_table["category"]] = names[example[mapping_table["category"]]]
                     example["names"] = ", ".join(names)
                     return example
+
                 dataset = dataset.map(process_label)
             mapping_table["names"] = "names"
         elif task_type.endswith("mrc"):
@@ -202,7 +202,7 @@ class SeqIO:
                 if hasattr(self.tokenizer, "additional_special_tokens") else None
 
             if len([token for token in extra_tokens if token.startswith("<extra_id")]) == 0:
-                extra_tokens = [f"<extra_id_{i+1}>" for i in range(100)]
+                extra_tokens = [f"<extra_id_{i + 1}>" for i in range(100)]
 
             def process_label(examples) -> dict:
                 truncated_tokens = self.tokenizer(
@@ -249,8 +249,10 @@ class SeqIO:
                         " ".join([self.tokenizer.convert_tokens_to_string(output) for output in outputs]))
 
                 return example_output
+
             sample = next(iter(dataset))
-            dataset = dataset.map(process_label, batched=True, remove_columns=set(sample.keys())-set(mapping_table.values()))
+            dataset = dataset.map(process_label, batched=True,
+                                  remove_columns=set(sample.keys()) - set(mapping_table.values()))
 
         def example_function(example: dict) -> dict:
             io = self.rng.choice(candidates)
@@ -264,7 +266,8 @@ class SeqIO:
                     if k in self.params_in_format_string(io["output"])
                 }),
             }
-        _rm_columns = set(mapping_table.values())-set(mapping_table.keys())
+
+        _rm_columns = set(mapping_table.values()) - set(mapping_table.keys())
         dataset = dataset.map(example_function, remove_columns=_rm_columns)
         return dataset
 
@@ -293,7 +296,7 @@ class SeqIO:
         return dataset.remove_columns(set(sample.keys()) - {"input", "output"})
 
 
-def translation_language_mapping(target, language_map:Dict[str, str]) -> dict:
+def translation_language_mapping(target, language_map: Dict[str, str]) -> dict:
     """
     Mapping the language code to the language name.
     :param target:
@@ -328,12 +331,14 @@ def translation_language_mapping(target, language_map:Dict[str, str]) -> dict:
     return target
 
 
-def _load_hf_dataset(data_name_or_path: str, data_auth_token: str, split="train", streaming=False) -> AVAILABLE_DATASETS:
+def _load_hf_dataset(data_name_or_path: str, data_auth_token: str, split="train",
+                     streaming=False) -> AVAILABLE_DATASETS:
     if data_name_or_path.endswith(".txt"):
         return load_dataset("text", data_files={"train": data_name_or_path}, streaming=streaming, split=split)
     elif os.path.isdir(data_name_or_path):
         from glob import glob
-        return load_dataset("text", data_files={"train": glob(os.path.join(data_name_or_path, "*.txt"))}, streaming=streaming, split=split)
+        return load_dataset("text", data_files={"train": glob(os.path.join(data_name_or_path, "*.txt"))},
+                            streaming=streaming, split=split)
     return load_dataset(
         *data_name_or_path.split(","),
         use_auth_token=data_auth_token,
