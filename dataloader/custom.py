@@ -20,11 +20,22 @@ from datasets import (
 COLUMNS = ("columns", "prompts")
 AVAILABLE_DATASETS = Union[Dataset, IterableDataset]
 
-NMT_LANGUAGE_EN2KO = OrderedDict([
+NMT_LANGUAGE_KO = OrderedDict([
     ("ko", "한국어"), ("en", "영어"), ("ja", "일본어"), ("zh", "중국어"), ("cn", "중국어"),
     ("fr", "프랑스어"), ("de", "독일어"), ("es", "스페인어"), ("ru", "러시아어"), ("vi", "베트남어"),
     ("th", "태국어"), ("id", "인도네시아어"), ("ar", "아랍어"), ("it", "이탈리아어"), ("pt", "포르투갈어"),
 ])
+
+NMT_LANGUAGE_EN = OrderedDict([
+    ("en", "English"), ("ko", "Korean"), ("ja", "Japanese"), ("zh", "Chinese"), ("cn", "Chinese"),
+    ("fr", "French"), ("de", "German"), ("es", "Spanish"), ("ru", "Russian"), ("vi", "Vietnamese"),
+    ("th", "Thai"), ("id", "Indonesian"), ("ar", "Arabic"), ("it", "Italian"), ("pt", "Portuguese"),
+])
+
+NMT_TARGET_MAPS = {
+    "ko": NMT_LANGUAGE_KO,
+    "en": NMT_LANGUAGE_EN
+}
 
 
 def shift_tokens_right(
@@ -34,6 +45,23 @@ def shift_tokens_right(
 ) -> np.ndarray:
     """
     Shift input ids one token to the right.
+
+    Args:
+        input_ids (:obj:`np.ndarray`):
+            The input ids.
+        pad_token_id (:obj:`int`):
+            The pad token id.
+        decoder_start_token_id (:obj:`int`):
+            The decoder start token id.
+
+    Returns:
+        :obj:`np.ndarray`: The shifted input ids.
+
+    Examples::
+    >>> from transformers import AutoTokenizer
+    >>> tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+    >>> input_ids = tokenizer("Hello, my dog is cute", return_tensors="np").input_ids
+    >>> shifted_input_ids = shift_tokens_right(input_ids, tokenizer.pad_token_id, tokenizer.cls_token_id)
     """
     shifted_input_ids = np.zeros_like(input_ids)
     shifted_input_ids = shifted_input_ids.at[:, 1:].set(input_ids[:, :-1])
@@ -48,6 +76,22 @@ def span_corruption_alignment(
         labels: List[str],
         extra_tokens: List[str]
 ) -> List[str]:
+    """
+    Align the tokens and labels for span corruption.
+    Args:
+        tokens (:obj:`List[str]`):
+            The tokens.
+        labels (:obj:`List[str]`):
+            The labels.
+        extra_tokens (:obj:`List[str]`):
+            The extra tokens.
+
+    Returns:
+        :obj:`List[str]`: The aligned tokens.
+
+    TODO:
+        Examples
+    """
 
     new_tokens, n_skip, n_extra = [], 0, 0
     for token in tokens:
@@ -87,7 +131,43 @@ class SeqIO:
             mapping_table: dict,
             **kwargs
     ) -> AVAILABLE_DATASETS:
+        """
+        Transform a single dataset.
+        :param task_type: type of task(e.g. translation, classification, mrc, etc.)
+        :param language: language of dataset(e.g. ko, en, etc.)
+        :param dataset: dataset to transform
+        :param mapping_table: mapping table for dataset
+        :param kwargs: additional arguments
+        :return: transformed dataset
 
+        >>> from datasets import load_dataset
+        >>> dataset = load_dataset("wmt16", "de-en", split="train[:10]")
+        >>> def preprocess_function(example):
+        ...     example["source"] = example["translation"]["en"]
+        ...     example["target"] = example["translation"]["de"]
+        ...     example["source_language"] = "english"
+        ...     example["target_language"] = "deutsch"
+        ...     return example
+        >>> dataset = dataset.map(preprocess_function, remove_columns=["translation"])
+        >>> mapping_table =  {
+        ...     "source": "source",
+        ...     "target": "target",
+        ...     "source_language": "source_language",
+        ...     "target_language": "target_language"
+        ... }
+        >>> seqio = SeqIO()
+        >>> target = seqio._transform_single_dataset(
+        ...     task_type="translation",
+        ...     language="en",
+        ...     dataset=dataset,
+        ...     mapping_table=mapping_table,
+        ... )
+        >>> target
+        Dataset({
+            features: ['source', 'target', 'source_language', 'target_language', 'input', 'output'],
+            num_rows: 10
+        })
+        """
         candidates = [
             prompt["format"] for prompt in self.prompt_list
             if prompt["task"] == task_type and prompt["language"] in language.split(",")
@@ -184,11 +264,15 @@ class SeqIO:
                     if k in self.params_in_format_string(io["output"])
                 }),
             }
-
-        dataset = dataset.map(example_function, remove_columns=set(mapping_table.values())-set(mapping_table.keys()))
+        _rm_columns = set(mapping_table.values())-set(mapping_table.keys())
+        dataset = dataset.map(example_function, remove_columns=_rm_columns)
         return dataset
 
-    def transform(self, datalist_with_meta: List[Dict[str, Union[str, dict, AVAILABLE_DATASETS]]], merge_method: str = "interleave") -> AVAILABLE_DATASETS:
+    def transform(
+            self,
+            datalist_with_meta: List[Dict[str, Union[str, dict, AVAILABLE_DATASETS]]],
+            merge_method: str = "interleave"
+    ) -> AVAILABLE_DATASETS:
         total = []
         for data in datalist_with_meta:
             total.append(
@@ -209,8 +293,8 @@ class SeqIO:
         return dataset.remove_columns(set(sample.keys()) - {"input", "output"})
 
 
-def translation_language_mapping(target) -> dict:
-    lang_change = lambda x: NMT_LANGUAGE_EN2KO.get(x, x)
+def translation_language_mapping(target, language_map:Dict[str, str]) -> dict:
+    lang_change = lambda x: language_map.get(x, x)
     _inv_mapping = {v: k for k, v in target["mapping_table"].items()}
     target["dataset"] = target["dataset"].map(
         lambda x: {
@@ -223,7 +307,7 @@ def translation_language_mapping(target) -> dict:
 
 def _load_hf_dataset(data_name_or_path: str, data_auth_token: str, split="train", streaming=False) -> AVAILABLE_DATASETS:
     if data_name_or_path.endswith(".txt"):
-        return load_dataset("text", data_files={"train":data_name_or_path}, streaming=streaming, split=split)
+        return load_dataset("text", data_files={"train": data_name_or_path}, streaming=streaming, split=split)
     elif os.path.isdir(data_name_or_path):
         from glob import glob
         return load_dataset("text", data_files={"train": glob(os.path.join(data_name_or_path, "*.txt"))}, streaming=streaming, split=split)
@@ -261,8 +345,8 @@ def load_datasets_from_json(
             }
             if shuffle:
                 target["dataset"] = target["dataset"].shuffle()
-            if target["task_type"] == "translation" and target["language"] == "ko":
-                target = translation_language_mapping(target)
+            if target["task_type"] == "translation" and target["language"] in NMT_TARGET_MAPS:
+                target = translation_language_mapping(target, NMT_TARGET_MAPS[target["language"]])
         outputs.append(target)
 
     return [o for o in outputs if o is not None]

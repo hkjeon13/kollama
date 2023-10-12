@@ -310,15 +310,5 @@ def main():
             print(f"  {key} = {value:.3f}")
 
 
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     main()

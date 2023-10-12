@@ -9,6 +9,14 @@
   },
   {
     "task": "translation",
+    "language": "en",
+    "format": {
+      "input": "translate to {target_language}: {source}",
+      "output": "{target}"
+    }
+  },
+  {
+    "task": "translation",
     "language": "ko",
     "format": {
       "input": "번역({source_language} -> {target_language}): {source}",
