@@ -5,6 +5,7 @@ from transformers import (
     TrainerState,
     TrainerControl
 )
+from typing import List, Optional
 
 class SlackOnLogCallback(TrainerCallback):
     def __init__(
@@ -18,6 +19,7 @@ class SlackOnLogCallback(TrainerCallback):
         self.slack_bot = Slacker(slack_token)
         self.message_prefix = message_prefix
         self.message_channel = message_channel
+
     def on_log(
             self,
             args: TrainingArguments,
@@ -33,3 +35,36 @@ class SlackOnLogCallback(TrainerCallback):
             self.message_channel,
             self.message_prefix + _message
         )
+
+
+def get_callbacks(
+        use_slack_notifier: bool,
+        slack_token: str,
+        slack_channel: str,
+        slack_message_prefix: str
+) -> Optional[List[TrainerCallback]]:
+    """
+    Get trainer callbacks
+    :param use_slack_notifier:
+    :param slack_token:
+    :param slack_channel:
+    :param slack_message_prefix:
+    :return:
+    """
+    trainer_callbacks = None
+    if use_slack_notifier:
+        try:
+            from utils.callbacks import SlackOnLogCallback
+        except ImportError:
+            raise ImportError("Please install slacker to use slack notifier callback (e.g. $pip install slacker)")
+
+        trainer_callbacks = [
+            SlackOnLogCallback(
+                slack_token=slack_token,
+                message_channel=slack_channel,
+                message_prefix=slack_message_prefix,
+            )
+        ]
+
+    return trainer_callbacks
+

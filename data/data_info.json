@@ -12,7 +12,8 @@
     },
     "train": "train",
     "validation": "validation",
-    "text_columns": ["source", "target"]
+    "input_column": ["source"],
+    "output_column": "target"
   },
   {
     "task_type": "summarization",
@@ -25,7 +26,8 @@
     },
     "train": "train",
     "validation": "validation",
-    "text_columns": ["passage", "summary"]
+    "input_column": ["passage"],
+    "output_column": "summary"
   },
   {
     "task_type": "sentiment-classification",
@@ -38,7 +40,8 @@
     },
     "train": "train",
     "validation": "test",
-    "text_columns": ["document"]
+    "input_column": ["document"],
+    "output_column": "label"
   },
   {
     "task_type": "category-classification",
@@ -51,7 +54,8 @@
     },
     "train": "train",
     "validation": "validation",
-    "text_columns": ["title"]
+    "input_column": ["title"],
+    "output_column": "label"
   },
   {
     "task_type": "mrc",
@@ -65,7 +69,8 @@
     },
     "train": "train",
     "validation": "validation",
-    "text_columns": ["context"]
+    "input_column": ["context", "question"],
+    "output_column": "answer"
   },
   {
     "task_type": "instruction",
@@ -78,27 +83,8 @@
       "output": "output"
     },
     "train": "train",
-    "validation": "validation",
-    "text_columns": ["context"]
-  },
-  {
-    "task_type": "span-corruption",
-    "language": "ko",
-    "data_name_or_path": "wikipedia,20220301.en",
-    "data_auth_token": null,
-    "mapping_table": {
-      "text": "text",
-      "label": "label"
-    },
-    "train": "train",
     "validation": null,
-    "text_columns": ["context"],
-    "kwargs": {
-        "min_span_length": 1,
-        "max_span_length": 20,
-        "min_interval": 3,
-        "span_ratio": 0.2,
-        "max_seq_length": 512
-    }
+    "input_column": ["instruction", "input"],
+    "output_column": "output"
   }
 ]

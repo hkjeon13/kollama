@@ -1,5 +1,6 @@
-from typing import Any, Dict, Optional,Literal
 from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Literal
+
 from transformers import (
     HfArgumentParser,
     TrainingArguments,
@@ -10,8 +11,11 @@ from transformers import (
     PreTrainedModel,
     DataCollatorForLanguageModeling,
     DataCollatorForSeq2Seq,
+    PreTrainedTokenizer
 )
-
+import datasets
+from dataloader import load
+from utils import get_tokenized_dataset, GenerationParams, get_callbacks, get_data_collator, get_special_tokens
 
 @dataclass
 class ModelParams:
@@ -47,12 +51,12 @@ class LoraParams:
         metadata={"help": "Whether to apply LoRA"}
     )
 
-    lora_r: float = field(
+    lora_r: int = field(
         default=64,
         metadata={"help": "The r value of LoRA"}
     )
 
-    lora_alpha: float = field(
+    lora_alpha: int = field(
         default=16,
         metadata={"help": "The alpha value of LoRA"}
     )
@@ -61,6 +65,7 @@ class LoraParams:
         default=0.1,
         metadata={"help": "The dropout value of LoRA"}
     )
+
 
 @dataclass
 class BnBParams:
@@ -84,6 +89,7 @@ class BnBParams:
         metadata={"help": "The compute dtype for BnB 4bit"}
     )
 
+
 @dataclass
 class DataParams:
     data_name_or_path: str = field(
@@ -95,10 +101,16 @@ class DataParams:
         metadata={"help": "The data auth token"}
     )
 
-    max_seq_length: int = field(
+    max_input_length: int = field(
         default=1024,
         metadata={"help": "The maximum total input sequence length after tokenization"}
     )
+
+    max_output_length: int = field(
+        default=1024,
+        metadata={"help": "The maximum total output sequence length after tokenization"}
+    )
+
 
     train_split_name: str = field(
         default="train",
@@ -110,6 +122,50 @@ class DataParams:
         metadata={"help": "The name of eval split"}
     )
 
+    is_supervised_dataset: bool = field(
+        default=False,
+        metadata={"help": "Whether to use supervised dataset"}
+    )
+
+    streaming: bool = field(
+        default=False,
+        metadata={"help": "Whether to use streaming dataset"}
+    )
+
+    train_samples: Optional[int] = field(
+        default=None,
+        metadata={"help": "The number of train samples to use"}
+    )
+
+    eval_samples: Optional[int] = field(
+        default=None,
+        metadata={"help": "The number of eval samples to use"}
+    )
+
+@dataclass
+class SlackParams:
+    use_slack_notifier: bool = field(
+        default=False,
+        metadata={"help": "Whether to use slack notifier"}
+    )
+
+    slack_token: str = field(
+        default="",
+        metadata={"help": "The slack token"}
+    )
+
+    slack_channel: str = field(
+        default="general",
+        metadata={"help": "The slack channel"}
+    )
+
+    slack_message_prefix: str = field(
+        default="",
+        metadata={"help": "The slack message prefix"}
+    )
+
+
+
 
 def get_lora_model(
         model: PreTrainedModel,
@@ -119,6 +175,7 @@ def get_lora_model(
 ):
     """
     Get LoRA model
+    :param print_trainable_parameters:
     :param model:
     :param lora_config:
     :param model_type:
@@ -144,7 +201,7 @@ def get_lora_model(
         raise ImportError("Please install peft library to apply PEFT LoRA (e.g. $pip install peft)")
 
     lora_config = LoraConfig(
-        task_type=TaskType.CAUSAL_LM if model_type == "causal" else TaskType.SEQ2SEQ,
+        task_type=TaskType.CAUSAL_LM if model_type == "causal" else TaskType.SEQ_2_SEQ_LM,
         r=lora_config.lora_r,
         lora_alpha=lora_config.lora_alpha,
         lora_dropout=lora_config.lora_dropout,
@@ -192,63 +249,9 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
     return additional_config
 
 
-def get_data_collator(model, tokenizer, model_args):
-    """
-    Get data collator
-    :param model:
-    :param tokenizer:
-    :param model_args:
-    :return:
-
-    >>> from transformers import AutoTokenizer, AutoModelForCausalLM
-    >>> tokenizer = AutoTokenizer.from_pretrained("psyche/kogpt")
-    >>> model = AutoModelForCausalLM.from_pretrained("psyche/kogpt")
-    >>> from dataclasses import dataclass
-    >>> @dataclass
-    ... class ModelParams:
-    ...     model_type: str = "causal"
-    >>> model_args = ModelParams()
-    >>> get_data_collator(model, tokenizer, model_args).__class__.__name__
-    'DataCollatorForLanguageModeling'
-    """
-    from inspect import signature
-
-    collator_module = DataCollatorForLanguageModeling \
-        if model_args.model_type == "causal" else DataCollatorForSeq2Seq
-    candidates = {
-        "tokenizer": tokenizer, "model": model, "mlm": False,
-        "pad_to_multiple_of": None
-    }
-    para_names = signature(collator_module.__init__).parameters.keys()
-    collator_args = {
-        key: candidates.get(key) for key in para_names if key in candidates
-    }
-
-    return collator_module(**collator_args)
-
-
-def get_callbacks(model_args):
-    trainer_callbacks = None
-    if model_args.use_slack_notifier:
-        try:
-            from utils.callbacks import SlackOnLogCallback
-        except ImportError:
-            raise ImportError("Please install slacker to use slack notifier callback (e.g. $pip install slacker)")
-
-        trainer_callbacks = [
-            SlackOnLogCallback(
-                slack_token=model_args.slack_token,
-                message_channel=model_args.slack_channel,
-                message_prefix=model_args.slack_message_prefix,
-            )
-        ]
-
-    return trainer_callbacks
-
-
 def main():
-    parser = HfArgumentParser((ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams))
-    model_args, data_args, training_args, lora_config, bnb_config = parser.parse_args_into_dataclasses()
+    parser = HfArgumentParser((ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams))
+    model_args, data_args, training_args, lora_config, bnb_config, generation_args, slack_args = parser.parse_args_into_dataclasses()
 
     additional_config = get_bnb_config(bnb_config)
 
@@ -258,7 +261,6 @@ def main():
         use_auth_token=model_args.model_auth_token,
         **additional_config
     )
-
 
     model_class = AutoModelForCausalLM \
         if model_args.model_type == "causal" else AutoModelForSeq2SeqLM
@@ -275,27 +277,66 @@ def main():
         )
 
     if model_args.add_pad_token:
-        from utils.tokenizer_utils import get_special_tokens
         _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
         tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
         model = model.resize_token_embeddings(len(tokenizer))
 
     data_collator = get_data_collator(model, tokenizer, model_args)
 
-    if bnb_config.do_4bit_training:
+    if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
 
-    trainer_callbacks = get_callbacks(model_args)
-    # TODO: add data download
-    
-    dataset = None
+
+    dataset = load(
+        data_name_or_path=data_args.data_name_or_path,
+        data_auth_token=data_args.data_auth_token,
+        streaming=data_args.streaming,
+        is_supervised_dataset=data_args.is_supervised_dataset
+    )
+
+    if data_args.train_split_name in dataset:
+        dataset[data_args.train_split_name] = get_tokenized_dataset(
+            dataset=dataset[data_args.train_split_name],
+            tokenizer=tokenizer,
+            model_type=model_args.model_type,
+            max_input_length=data_args.max_input_length,
+            max_output_length=data_args.max_output_length,
+            prefix=data_args.prefix,
+            suffix=data_args.suffix,
+            is_train=True,
+        )
+
+    if data_args.eval_split_name in dataset:
+        dataset[data_args.eval_split_name] = get_tokenized_dataset(
+            dataset=dataset[data_args.eval_split_name],
+            tokenizer=tokenizer,
+            model_type=model_args.model_type,
+            max_input_length=data_args.max_input_length,
+            max_output_length=data_args.max_output_length,
+            prefix=data_args.prefix,
+            suffix=data_args.suffix,
+            is_train=False,
+        )
+
+    if data_args.train_samples is not None:
+        dataset[data_args.train_split_name] = dataset[data_args.train_split_name].select(range(data_args.train_samples))
+
+    if data_args.eval_samples is not None:
+        dataset[data_args.eval_split_name] = dataset[data_args.eval_split_name].select(range(data_args.eval_samples))
+
+    trainer_callbacks = get_callbacks(
+        use_slack_notifier=slack_args.use_slack_notifier,
+        slack_token=slack_args.slack_token,
+        slack_channel=slack_args.slack_channel,
+        slack_message_prefix=slack_args.slack_message_prefix,
+    )
 
     trainer = Trainer(
         model=model,
+        tokenizer=tokenizer,
         args=training_args,
         train_dataset=dataset[data_args.train_split_name],
         eval_dataset=dataset[data_args.eval_split_name],
-        tokenizer=tokenizer,
         data_collator=data_collator,
         callbacks=trainer_callbacks,
     )

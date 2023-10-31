@@ -2,8 +2,8 @@ import json
 import os
 import random
 import string
-from functools import partial
 from collections import defaultdict, OrderedDict
+from functools import partial
 from typing import Dict, List, Union, Literal
 
 import numpy as np
@@ -173,7 +173,7 @@ class SeqIO:
         candidates = [
             c for c in candidates
             if len(self.params_in_format_string(" ".join(c.values())) - set(mapping_table.keys()).union(
-                set(["names"]))) == 0
+                {"names"})) == 0
         ]
 
         if len(candidates) == 0:
@@ -251,8 +251,11 @@ class SeqIO:
                 return example_output
 
             sample = next(iter(dataset))
-            dataset = dataset.map(process_label, batched=True,
-                                  remove_columns=set(sample.keys()) - set(mapping_table.values()))
+            dataset = dataset.map(
+                process_label,
+                batched=True,
+                remove_columns=list(set(sample.keys()) - set(mapping_table.values()))
+            )
 
         def example_function(example: dict) -> dict:
             io = self.rng.choice(candidates)
@@ -267,7 +270,7 @@ class SeqIO:
                 }),
             }
 
-        _rm_columns = set(mapping_table.values()) - set(mapping_table.keys())
+        _rm_columns = list(set(mapping_table.values()) - set(mapping_table.keys()))
         dataset = dataset.map(example_function, remove_columns=_rm_columns)
         return dataset
 
@@ -293,7 +296,7 @@ class SeqIO:
         _merge_function = interleave_function if merge_method == "interleave" else concatenate_datasets
         dataset = _merge_function(total)
         sample = next(iter(dataset))
-        return dataset.remove_columns(set(sample.keys()) - {"input", "output"})
+        return dataset.remove_columns(list(set(sample.keys()) - {"input", "output"}))
 
 
 def translation_language_mapping(target, language_map: Dict[str, str]) -> dict:
@@ -347,9 +350,14 @@ def _load_hf_dataset(data_name_or_path: str, data_auth_token: str, split="train"
     )
 
 
+def read_json(path: str) -> List[Dict[str, Union[str, dict]]]:
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def load_datasets_from_json(
-        path: str,
-        split: Literal["train", "validation"] = "train",
+        path: Union[str, List[Dict[str, Union[str, dict]]]],
+        split: Union[Literal["train", "validation"], str] = "train",
         streaming: bool = False,
         shuffle: bool = False,
 ) -> List[Dict[str, Union[str, dict, AVAILABLE_DATASETS]]]:
@@ -382,11 +390,8 @@ def load_datasets_from_json(
         num_rows: 3
     }), 'mapping_table': {'source': 'source', 'target': 'target', 'source_language': 'source_language', 'target_language': 'target_language'}, 'kwargs': {}}]
     """
-    if isinstance(path, str):
-        with open(path, "r", encoding="utf-8") as f:
-            datalist = json.load(f)
-    else:
-        datalist = path
+
+    datalist = read_json(path) if isinstance(path, str) else path
     outputs = []
     for data in datalist:
         target = None
