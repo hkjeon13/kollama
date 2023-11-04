@@ -63,7 +63,9 @@ def get_tokenized_dataset(
         if model_type == "causal" and not is_train:
             tokenizer.padding_side = "left"
             tokenizer.truncation_side = "left"
-
+        else:
+            tokenizer.padding_side = "right"
+            tokenizer.truncation_side = "right"
         tokenized_inputs = tokenizer(*inputs, padding="max_length", truncation=True, max_length=max_input_length)
 
         if model_type == "causal" and not is_train:
