@@ -8,7 +8,7 @@ from datasets import load_from_disk, load_dataset, DatasetDict, IterableDatasetD
 
 def trim_dataset(
         dataset_with_info: List[Dict[str, Union[Dataset, IterableDataset, str]]],
-) -> List[Dict[str, Union[Dataset, IterableDataset, str]]]:
+) -> List[Union[Dataset, IterableDataset, str]]:
     outputs = []
     for single_data_info in dataset_with_info:
         if not isinstance(single_data_info["dataset"], (Dataset, IterableDataset)):
@@ -68,12 +68,10 @@ def load(
             eval_datasets = seqio.transform(eval_datasets, merge_method=merge_method)
         else:
             from datasets import concatenate_datasets, interleave_datasets
-
-            train_datasets = trim_dataset(train_datasets)
-            eval_datasets = trim_dataset(eval_datasets)
             _merge_method = interleave_datasets if merge_method == "interleave" else concatenate_datasets
-            train_datasets = _merge_method([d["dataset"] for d in train_datasets])
-            eval_datasets = _merge_method([d["dataset"] for d in eval_datasets])
+
+            train_datasets = _merge_method(trim_dataset(train_datasets))
+            eval_datasets = _merge_method(trim_dataset(eval_datasets))
 
         return (DatasetDict if not streaming else IterableDatasetDict)({
             "train": train_datasets,
