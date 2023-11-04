@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from slacker import Slacker
 from transformers import (
     TrainerCallback,
@@ -5,7 +7,7 @@ from transformers import (
     TrainerState,
     TrainerControl
 )
-from typing import List, Optional
+
 
 class SlackOnLogCallback(TrainerCallback):
     def __init__(
@@ -67,4 +69,3 @@ def get_callbacks(
         ]
 
     return trainer_callbacks
-

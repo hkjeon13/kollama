@@ -1,10 +1,13 @@
-from datasets import load_dataset
-from transformers import HfArgumentParser
-from dataclasses import dataclass, field
-import openai
 import json
 import os
+from dataclasses import dataclass, field
+
+import openai
+from datasets import load_dataset
 from tqdm import tqdm
+from transformers import HfArgumentParser
+
+
 @dataclass
 class APIParams:
     token_file: str = field(
@@ -41,6 +44,7 @@ class DataParams:
         default=0,
         metadata={"help": "The start index of the dataset"},
     )
+
 
 @dataclass
 class SaveParams:
@@ -98,13 +102,15 @@ def main():
         if model_output[api_params.api_model_name]:
             outputs.append(model_output)
         if len(outputs) % save_params.save_steps == 0 and len(outputs) > 0:
-            with open(os.path.join(save_params.output_dir, f"{save_params.save_name}_{save_steps}.json"), "w", encoding="utf-8") as f:
+            with open(os.path.join(save_params.output_dir, f"{save_params.save_name}_{save_steps}.json"), "w",
+                      encoding="utf-8") as f:
                 json.dump(outputs, f, indent=4, ensure_ascii=False)
             save_steps += 1
             outputs = []
 
     if len(outputs) > 0:
-        with open(os.path.join(save_params.output_dir, f"{save_params.save_name}_{save_steps}.json"), "w", encoding="utf-8") as f:
+        with open(os.path.join(save_params.output_dir, f"{save_params.save_name}_{save_steps}.json"), "w",
+                  encoding="utf-8") as f:
             json.dump(outputs, f, indent=4, ensure_ascii=False)
 
 

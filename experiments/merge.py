@@ -1,6 +1,7 @@
-from datasets import Dataset, load_dataset, concatenate_datasets
 import json
 from glob import glob
+
+from datasets import Dataset, load_dataset, concatenate_datasets
 
 
 def load_json(file_path):
@@ -9,7 +10,8 @@ def load_json(file_path):
 
 
 def main():
-    base_dataset = load_dataset("psyche/instruction-gpt-3.5-turbo",  token="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", split="train")
+    base_dataset = load_dataset("psyche/instruction-gpt-3.5-turbo", token="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",
+                                split="train")
     print("BASE DATASET:", base_dataset)
     files = glob("output2/*.json")
     total = []

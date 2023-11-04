@@ -83,8 +83,27 @@
       "output": "output"
     },
     "train": "train",
-    "validation": null,
     "input_column": ["instruction", "input"],
     "output_column": "output"
+  },
+  {
+    "task_type": "span-corruption",
+    "language": "ko",
+    "data_name_or_path": "wikipedia,20220301.en",
+    "data_auth_token": null,
+    "mapping_table": {
+      "text": "text",
+      "label": "label"
+    },
+    "train": "train",
+    "validation": null,
+    "text_columns": ["context"],
+    "kwargs": {
+        "min_span_length": 1,
+        "max_span_length": 20,
+        "min_interval": 3,
+        "span_ratio": 0.2,
+        "max_seq_length": 512
+    }
   }
 ]

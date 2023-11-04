@@ -1,5 +1,6 @@
 from transformers import DataCollatorForLanguageModeling, DataCollatorForSeq2Seq
 
+
 def get_data_collator(model, tokenizer, model_args):
     """
     Get data collator

@@ -1,8 +1,9 @@
 from collections import OrderedDict
+from typing import Literal
+from typing import Optional, Union, List
+
 import datasets
 from transformers import PreTrainedTokenizer
-from typing import Optional, Union, List
-from typing import Literal
 
 _SP_TOKENS_MAP = OrderedDict([
     ("bos", ["<s>", "<|startoftext|>", "[CLS]"]),
@@ -52,7 +53,7 @@ def get_tokenized_dataset(
 
     def tokenize_function(examples):
         inputs, outputs = [], []
-        examples[input_column] = [prefix+input_text+suffix for input_text in examples[input_column]]
+        examples[input_column] = [prefix + input_text + suffix for input_text in examples[input_column]]
         inputs.append(examples[input_column])
         outputs.append(examples[output_column])
 

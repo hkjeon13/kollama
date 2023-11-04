@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Literal
+from typing import Any, Dict, Optional, Literal, Union
 
+import datasets
 from transformers import (
     HfArgumentParser,
     TrainingArguments,
@@ -9,13 +10,12 @@ from transformers import (
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
     PreTrainedModel,
-    DataCollatorForLanguageModeling,
-    DataCollatorForSeq2Seq,
     PreTrainedTokenizer
 )
-import datasets
+
 from dataloader import load
 from utils import get_tokenized_dataset, GenerationParams, get_callbacks, get_data_collator, get_special_tokens
+
 
 @dataclass
 class ModelParams:
@@ -111,7 +111,6 @@ class DataParams:
         metadata={"help": "The maximum total output sequence length after tokenization"}
     )
 
-
     train_split_name: str = field(
         default="train",
         metadata={"help": "The name of train split"}
@@ -142,6 +141,27 @@ class DataParams:
         metadata={"help": "The number of eval samples to use"}
     )
 
+    prefix: str = field(
+        default="",
+        metadata={"help": "The prefix to add to the input"}
+    )
+
+    suffix: str = field(
+        default="",
+        metadata={"help": "The suffix to add to the input"}
+    )
+
+    input_column_name: str = field(
+        default="input",
+        metadata={"help": "The column to choose from the dataset"}
+    )
+
+    output_column_name: str = field(
+        default="output",
+        metadata={"help": "The column to reject from the dataset"}
+    )
+
+
 @dataclass
 class SlackParams:
     use_slack_notifier: bool = field(
@@ -163,8 +183,6 @@ class SlackParams:
         default="",
         metadata={"help": "The slack message prefix"}
     )
-
-
 
 
 def get_lora_model(
@@ -213,6 +231,30 @@ def get_lora_model(
     return model
 
 
+def print_dataset_samples(
+        tokenizer: PreTrainedTokenizer,
+        dataset: Union[datasets.Dataset, datasets.IterableDataset],
+        num_samples: int = 5
+) -> None:
+    """
+    Print dataset samples
+    :param tokenizer:
+    :param dataset:
+    :param num_samples:
+    :return:
+    """
+    generator = iter(dataset)
+    for i in range(num_samples):
+        sample = next(generator)
+        input_ids = sample.get("input_ids")
+        output_ids = sample.get("labels")
+        print("#" * 10 + f"Sample {i}" + "#" * 10)
+        if input_ids is not None:
+            print(f"input: {tokenizer.decode(input_ids)}")
+        if output_ids is not None:
+            print(f"output: {tokenizer.decode(output_ids)}")
+
+
 def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
     """
     Get additional config for bitsandbytes
@@ -250,7 +292,8 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
 
 
 def main():
-    parser = HfArgumentParser((ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams))
+    parser = HfArgumentParser(
+        (ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams))
     model_args, data_args, training_args, lora_config, bnb_config, generation_args, slack_args = parser.parse_args_into_dataclasses()
 
     additional_config = get_bnb_config(bnb_config)
@@ -286,7 +329,6 @@ def main():
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
 
-
     dataset = load(
         data_name_or_path=data_args.data_name_or_path,
         data_auth_token=data_args.data_auth_token,
@@ -297,6 +339,8 @@ def main():
     if data_args.train_split_name in dataset:
         dataset[data_args.train_split_name] = get_tokenized_dataset(
             dataset=dataset[data_args.train_split_name],
+            input_column=data_args.input_column_name,
+            output_column=data_args.output_column_name,
             tokenizer=tokenizer,
             model_type=model_args.model_type,
             max_input_length=data_args.max_input_length,
@@ -304,11 +348,14 @@ def main():
             prefix=data_args.prefix,
             suffix=data_args.suffix,
             is_train=True,
+            remove_columns=True
         )
 
     if data_args.eval_split_name in dataset:
         dataset[data_args.eval_split_name] = get_tokenized_dataset(
             dataset=dataset[data_args.eval_split_name],
+            input_column=data_args.input_column_name,
+            output_column=data_args.output_column_name,
             tokenizer=tokenizer,
             model_type=model_args.model_type,
             max_input_length=data_args.max_input_length,
@@ -316,6 +363,7 @@ def main():
             prefix=data_args.prefix,
             suffix=data_args.suffix,
             is_train=False,
+            remove_columns=True
         )
 
     if data_args.train_samples is not None:
@@ -330,6 +378,14 @@ def main():
         slack_channel=slack_args.slack_channel,
         slack_message_prefix=slack_args.slack_message_prefix,
     )
+
+    if data_args.train_split_name in dataset:
+        print("***** Train dataset samples *****")
+        print_dataset_samples(tokenizer, dataset[data_args.train_split_name], num_samples=3)
+
+    if data_args.eval_split_name in dataset:
+        print("***** Eval dataset samples *****")
+        print_dataset_samples(tokenizer, dataset[data_args.eval_split_name], num_samples=3)
 
     trainer = Trainer(
         model=model,

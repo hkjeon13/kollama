@@ -1,30 +1,28 @@
 import os
 from inspect import signature
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, Dict
 
 from datasets import Dataset, IterableDataset
 from datasets import load_from_disk, load_dataset, DatasetDict, IterableDatasetDict
 
 
 def trim_dataset(
-        dataset_with_info: List[Dict[str, Union[Dataset, IterableDataset, str]]],
-) -> List[Union[Dataset, IterableDataset, str]]:
-    outputs = []
-    for single_data_info in dataset_with_info:
-        if not isinstance(single_data_info["dataset"], (Dataset, IterableDataset)):
-            raise ValueError("The dataset must be Dataset or IterableDataset")
+        single_data_info: Dict[str, Union[Dataset, IterableDataset, str]],
+) -> Union[Dataset, IterableDataset]:
+    if not isinstance(single_data_info["dataset"], (Dataset, IterableDataset)):
+        raise ValueError("The dataset must be Dataset or IterableDataset")
 
-        def transform(example):
-            label = example.get(single_data_info["output_column"], None)
-            example["input"] = " ".join(example[column] for column in single_data_info["input_column"])
-            if label is not None:
-                example["output"] = str(label)
-            return example
+    def transform(example):
+        label = example.get(single_data_info["output_column"], None)
+        example["input"] = " ".join(example[column] for column in single_data_info["input_column"])
+        if label is not None:
+            example["output"] = str(label)
+        return example
 
-        keys = list(next(iter(single_data_info["dataset"])).keys())
-        single_data_info["dataset"] = single_data_info["dataset"].map(transform, remove_columns=keys)
-        outputs.append(single_data_info["dataset"])
-    return outputs
+    keys = list(next(iter(single_data_info["dataset"])).keys())
+
+    return single_data_info["dataset"].map(transform, remove_columns=keys)
+
 
 def load(
         data_name_or_path: str,
@@ -61,7 +59,7 @@ def load(
         merge_method = kwargs.get("merging_method", "interleave")
         if is_supervised_dataset:
             seqio = SeqIO(
-                os.path.join(os.path.abspath(__file__), "data/prompts.json"),
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/prompts.json"),
                 tokenizer=kwargs.get("tokenizer", None)
             )
             train_datasets = seqio.transform(train_datasets, merge_method=merge_method)
@@ -70,8 +68,8 @@ def load(
             from datasets import concatenate_datasets, interleave_datasets
             _merge_method = interleave_datasets if merge_method == "interleave" else concatenate_datasets
 
-            train_datasets = _merge_method(trim_dataset(train_datasets))
-            eval_datasets = _merge_method(trim_dataset(eval_datasets))
+            train_datasets = _merge_method([trim_dataset(d) for d in train_datasets])
+            eval_datasets = _merge_method([trim_dataset(d) for d in eval_datasets])
 
         return (DatasetDict if not streaming else IterableDatasetDict)({
             "train": train_datasets,

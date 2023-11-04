@@ -256,11 +256,12 @@ class GenerationParamsBase(PushToHubMixin):
     _commit_hash: Optional[str] = None
     transformers_version: Optional[str] = __version__
 
+
 @dataclass
 class GenerationParams(GenerationParamsBase):
     early_stopping: Optional[bool] = None
 
+
 @dataclass
 class GenerationParamsForPPO(GenerationParamsBase):
     do_early_stopping: Optional[bool] = None
-

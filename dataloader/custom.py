@@ -406,7 +406,9 @@ def load_datasets_from_json(
                     streaming=streaming
                 ),
                 "mapping_table": data["mapping_table"],
-                "kwargs": data.get("kwargs", {})
+                "kwargs": data.get("kwargs", {}),
+                "input_column": data.get("input_column", ["input"]),
+                "output_column": data.get("output_column", "output"),
             }
             if shuffle:
                 target["dataset"] = target["dataset"].shuffle()
