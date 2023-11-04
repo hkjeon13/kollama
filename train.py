@@ -324,7 +324,6 @@ def main():
         tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
         model = model.resize_token_embeddings(len(tokenizer))
 
-    data_collator = get_data_collator(model, tokenizer, model_args)
 
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
@@ -380,12 +379,14 @@ def main():
     )
 
     if data_args.train_split_name in dataset:
-        print("***** Train dataset samples *****")
+        print("\n\n***** Train dataset samples *****")
         print_dataset_samples(tokenizer, dataset[data_args.train_split_name], num_samples=3)
 
     if data_args.eval_split_name in dataset:
-        print("***** Eval dataset samples *****")
+        print("\n\n***** Eval dataset samples *****")
         print_dataset_samples(tokenizer, dataset[data_args.eval_split_name], num_samples=3)
+
+    data_collator = get_data_collator(model, tokenizer, model_args)
 
     trainer = Trainer(
         model=model,
