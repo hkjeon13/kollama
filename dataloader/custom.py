@@ -193,7 +193,7 @@ class SeqIO:
             def process_label(example) -> dict:
                 ans_column = mapping_table["answer"]
                 answer = example[ans_column]
-                example[ans_column] = answer["text"]
+                example[ans_column] = answer["text"] if isinstance(answer["text"], str) else answer["text"][0]
                 return example
 
             dataset = dataset.map(process_label)
