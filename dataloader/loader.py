@@ -39,7 +39,6 @@ def load(
     >>> dataset.__class__.__name__
     'DatasetDict'
     """
-
     if data_name_or_path.endswith(".json"):
         from dataloader.custom import load_datasets_from_json, SeqIO
         train_datasets = load_datasets_from_json(

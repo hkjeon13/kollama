@@ -248,6 +248,54 @@
     }
   },
   {
+    "task": "instruction",
+    "language": "en",
+    "format": {
+      "input": "Input: {input}, Output:",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "en",
+    "format": {
+      "input": "{input}",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "ko",
+    "format": {
+      "input": "{instruction}\n{input}?",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "ko",
+    "format": {
+      "input": "지시: {instruction}\n입력: {input}, Output:",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "ko",
+    "format": {
+      "input": "입력: {input}, 출력:",
+      "output": "{output}"
+    }
+  },
+  {
+    "task": "instruction",
+    "language": "ko",
+    "format": {
+      "input": "{input}",
+      "output": "{output}"
+    }
+  },
+  {
     "task": "span-corruption",
     "language": "ko",
     "format": {

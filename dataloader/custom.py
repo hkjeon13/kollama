@@ -175,7 +175,6 @@ class SeqIO:
             if len(self.params_in_format_string(" ".join(c.values())) - set(mapping_table.keys()).union(
                 {"names"})) == 0
         ]
-
         if len(candidates) == 0:
             raise ValueError("There is no prompt for task_type: {} and language: {}".format(task_type, language))
 
@@ -270,7 +269,8 @@ class SeqIO:
                 }),
             }
 
-        _rm_columns = list(set(mapping_table.values()) - set(mapping_table.keys()))
+        sample = next(iter(dataset))
+        _rm_columns = list(sample.keys() - {"input", "output"})
         dataset = dataset.map(example_function, remove_columns=_rm_columns)
         return dataset
 
@@ -294,9 +294,7 @@ class SeqIO:
 
         interleave_function = partial(interleave_datasets, stopping_strategy="all_exhausted")
         _merge_function = interleave_function if merge_method == "interleave" else concatenate_datasets
-        dataset = _merge_function(total)
-        sample = next(iter(dataset))
-        return dataset.remove_columns(list(set(sample.keys()) - {"input", "output"}))
+        return _merge_function(total)
 
 
 def translation_language_mapping(target, language_map: Dict[str, str]) -> dict:
@@ -404,7 +402,7 @@ def load_datasets_from_json(
                     data_auth_token=data["data_auth_token"],
                     split=data[split],
                     streaming=streaming
-                ),
+                ).select(range(10)),
                 "mapping_table": data["mapping_table"],
                 "kwargs": data.get("kwargs", {}),
                 "input_column": data.get("input_column", ["input"]),
