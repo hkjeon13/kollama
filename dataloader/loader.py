@@ -29,6 +29,8 @@ def load(
         data_auth_token: Optional[str] = None,
         streaming: bool = False,
         is_supervised_dataset: bool = False,
+        group_task: bool = False,
+        merging_method: str = "interleave",
         **kwargs
 ) -> Union[DatasetDict, IterableDatasetDict, Dataset, IterableDataset]:
     """
@@ -61,8 +63,22 @@ def load(
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/prompts.json"),
                 tokenizer=kwargs.get("tokenizer", None)
             )
-            train_datasets = seqio.transform(train_datasets, merge_method=merge_method)
-            eval_datasets = seqio.transform(eval_datasets, merge_method=merge_method)
+
+            train_datasets = seqio.transform(
+                train_datasets,
+                merge_method=merge_method,
+                group_task=group_task,
+                merging_method=merging_method,
+                **kwargs
+            )
+
+            eval_datasets = seqio.transform(
+                eval_datasets,
+                merge_method=merge_method,
+                group_task=group_task,
+                merging_method=merging_method,
+                **kwargs
+            )
         else:
             from datasets import concatenate_datasets, interleave_datasets
             _merge_method = interleave_datasets if merge_method == "interleave" else concatenate_datasets

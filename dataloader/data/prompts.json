@@ -200,11 +200,52 @@
     }
   },
   {
+    "task": "summarization",
+    "language": "en",
+    "format": {
+      "input": "Summarize {passage}",
+      "output": "{summary}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "en",
+    "format": {
+      "input": "{passage} Summarize the above passage.",
+      "output": "{summary}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "en",
+    "format": {
+      "input": "Passage:{passage}, Summary: ",
+      "output": "{summary}"
+    }
+  },
+  {
+    "task": "summarization",
+    "language": "en",
+    "format": {
+      "input": "{passage}. What is the summary of passage?",
+      "output": "{summary}"
+    }
+  },
+  {
     "task": "sentiment-classification",
     "language": "ko",
     "format": {
       "input": "'{text}' 이 문장에서 드러난 감정은({names})?",
       "output": "문장에서 드러난 감정은 '{category}' 입니다."
+    }
+  },
+  {
+    "task": "sentiment-classification",
+    "language": "en",
+    "format": {
+      "input": "What is the sentiment of the following sentence({names})? {text}",
+      "output": "{category}"
+
     }
   },
   {
@@ -231,6 +272,79 @@
       "output": "주어진 문맥에서 찾은 답은 '{answer}' 입니다."
     }
   },
+  {
+    "task": "mrc",
+    "language": "ko",
+    "format": {
+      "input": "{context} {question}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "mrc",
+    "language": "ko",
+    "format": {
+      "input": "문맥: {context} 질문: {question} 답:",
+        "output": "{answer}"
+    }
+  },
+  {
+    "task": "mrc",
+    "language": "en",
+    "format": {
+      "input": "What is the answer to the question '{question}' in the context of {context}?",
+      "output": "The answer is '{answer}'."
+    }
+  },
+  {
+    "task": "mrc",
+    "language": "en",
+    "format": {
+      "input": "{context} {question}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "mrc",
+    "language": "en",
+    "format": {
+      "input": "Context: {context} Question: {question} Answer: ",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "boolq",
+    "language": "ko",
+    "format": {
+      "input": "{passage} 위 문맥을 기반으로, '{question}' 이 맞아?(True/False)",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "boolq",
+    "language": "ko",
+    "format": {
+      "input": "다음 문맥을 기반으로 질문 또는 주장에 대한 참/거짓을 판단하시오.(True/False)\n문맥:{passage}\n질문/주장:{question}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "boolq",
+    "language": "en",
+    "format": {
+      "input": "Is it True or False?\nContext:{passage}\nQuestion:{question}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "boolq",
+    "language": "en",
+    "format": {
+      "input": "Please answer True or False on the basis of the following context.\nContext:{passage}\nQuestion:{question}",
+      "output": "{answer}"
+    }
+  },
+
   {
     "task": "instruction",
     "language": "en",
@@ -301,6 +415,262 @@
     "format": {
       "input": "{text}",
       "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "ko",
+    "format": {
+      "input": "전제:{premise}\n다음 문장에 대한 {question}로/으로 적절한 것은? {choices}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "ko",
+    "format": {
+      "input": "다음 문장에 대한 {question}로/으로 적절한 것은(전제:{premise})? {choices}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "ko",
+    "format": {
+      "input": "전제:{premise}\n다음 문장에 대한 {question}로/으로 적절한 것은? {choices}",
+      "output": "적절한 답은 {label}번 입니다."
+    }
+  },
+  {
+    "task": "copa",
+    "language": "ko",
+    "format": {
+      "input": "다음 문장에 대한 {question}로/으로 적절한 것은(전제:{premise})? {choices}",
+      "output": "적절한 답은 {label}번 입니다."
+    }
+  },
+  {
+    "task": "copa",
+    "language": "ko",
+    "format": {
+      "input": "질문:{question} 선택:{choices}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "ko",
+    "format": {
+      "input": "질문:{question} 선택:{choices}",
+      "output": "질문에 대한 적절한 답은 {label}번 입니다."
+    }
+  },
+  {
+    "task": "copa",
+    "language": "en",
+    "format": {
+      "input": "Premise:{premise}\nWhat is the appropriate {question} for the following sentence? {choices}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate {question} for the following sentence?(Premise:{premise}) {choices}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "en",
+    "format": {
+      "input": "Premise:{premise}\nWhat is the appropriate {question} for the following sentence? {choices}",
+      "output": "The appropriate answer is {label}."
+    }
+  },
+  {
+    "task": "copa",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate {question} for the following sentence?(Premise:{premise}) {choices}",
+      "output": "The appropriate answer is {label}."
+    }
+  },
+  {
+    "task": "copa",
+    "language": "en",
+    "format": {
+      "input": "Question:{question} Choice:{choices}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "copa",
+    "language": "en",
+    "format": {
+      "input": "Question:{question} Choice:{choices}",
+      "output": "The appropriate answer is {label}."
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "ko",
+    "format": {
+      "input": "다음 문맥 뒤에 올 수 있는 문장은? 문맥:{context}\n{endings}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "ko",
+    "format": {
+      "input": "{context} 위 문맥 뒤에 올 수 있는 문장은? {endings}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "ko",
+    "format": {
+      "input": "다음 문맥 뒤에 올 수 있는 문장은? 문맥:{context}\n{endings}",
+      "output": "다음에 올 수 있는 문장은 {label}번 입니다."
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "ko",
+    "format": {
+      "input": "{context} 위 문맥 뒤에 올 수 있는 문장은? {endings}",
+      "output": "다음에 올 수 있는 문장은 {label}번 입니다."
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate ending for the following context? Context:{context}\n{endings}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "en",
+    "format": {
+      "input": "{context} What is the appropriate ending for the following context? {endings}",
+      "output": "{label}"
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate ending for the following context? Context:{context}\n{endings}",
+      "output": "The appropriate ending is {label}."
+    }
+  },
+  {
+    "task": "hellaswag",
+    "language": "en",
+    "format": {
+      "input": "{context} What is the appropriate ending for the following context? {endings}",
+      "output": "The appropriate ending is {label}."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate answer for the following question? {question}\n{choices}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "en",
+    "format": {
+      "input": "{question} What is the appropriate answer for the above question? {choices}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "ko",
+    "format": {
+      "input": "다음 질문에 대한 적절한 답은? {question}\n{choices}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "ko",
+    "format": {
+      "input": "{question} 위 질문에 대한 적절한 답은? {choices}",
+      "output": "{answer}"
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate answer for the following question? {question}\n{choices}",
+      "output": "The appropriate answer is {answer}."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "en",
+    "format": {
+      "input": "{question} What is the appropriate answer for the above question? {choices}",
+      "output": "The appropriate answer is {answer}."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "ko",
+    "format": {
+      "input": "다음 질문에 대한 적절한 답은? {question}\n{choices}",
+      "output": "적절한 답은 {answer}번 입니다."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "ko",
+    "format": {
+      "input": "{question} 위 질문에 대한 적절한 답은? {choices}",
+      "output": "적절한 답은 {answer}번 입니다."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "en",
+    "format": {
+      "input": "What is the appropriate answer for the following question? {question}\n{choices}",
+      "output": "The appropriate answer is {answer}."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "en",
+    "format": {
+      "input": "{question} What is the appropriate answer for the above question? {choices}",
+      "output": "The appropriate answer is {answer}."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "ko",
+    "format": {
+      "input": "다음 질문에 대한 적절한 답은? {question}\n{choices}",
+      "output": "적절한 답은 {answer}번 입니다."
+    }
+  },
+  {
+    "task": "multiple-choice",
+    "language": "ko",
+    "format": {
+      "input": "{question} 위 질문에 대한 적절한 답은? {choices}",
+        "output": "적절한 답은 {answer}번 입니다."
     }
   }
 

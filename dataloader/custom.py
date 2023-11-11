@@ -4,6 +4,7 @@ import random
 import string
 from collections import defaultdict, OrderedDict
 from functools import partial
+from inspect import signature
 from typing import Dict, List, Union, Literal
 
 import numpy as np
@@ -117,7 +118,7 @@ class SeqIO:
         with open(prompt_file_path, "r", encoding="utf-8") as f:
             self.prompt_list = json.load(f)
 
-        self.rng = random.SystemRandom(random_seed)
+        self.rng = random.Random(random_seed)
         self.params_in_format_string = lambda x: set(s for _, s, *_ in string.Formatter().parse(x) if s is not None)
         self.tokenizer = tokenizer
 
@@ -196,6 +197,51 @@ class SeqIO:
                 return example
 
             dataset = dataset.map(process_label)
+        elif task_type.endswith("boolq"):
+            def process_label(example) -> dict:
+                ans_column = mapping_table["answer"]
+                answer = example[ans_column]
+                example[ans_column + "_1"] = bool(int(answer))
+                return example
+
+            dataset = dataset.map(process_label)
+            dataset = dataset.remove_columns([mapping_table["answer"]])
+            dataset = dataset.rename_column(mapping_table["answer"] + "_1", mapping_table["answer"])
+        elif task_type.endswith("copa"):
+            def process_label(example) -> dict:
+                example["choices"] = " ".join(
+                    [f"{i + 1}. {example[choice]}" for i, choice in enumerate(mapping_table["choices"])])
+                example[mapping_table["label"] + "_1"] = str(int(example[mapping_table["label"]]) + 1)
+                return example
+
+            dataset = dataset.map(process_label)
+            dataset = dataset.remove_columns([mapping_table["label"]])
+            dataset = dataset.rename_column(mapping_table["label"] + "_1", mapping_table["label"])
+            mapping_table["choices"] = "choices"
+        elif task_type.endswith("hellaswag"):
+            def process_label(example) -> dict:
+                idx = int(example[mapping_table["label"]])
+                example["endings"] = " ".join(
+                    [f"{i + 1}. {example[ending]}" for i, ending in enumerate(mapping_table["endings"])])
+                example[mapping_table["label"] + "_1"] = str(idx + 1)
+                return example
+
+            dataset = dataset.map(process_label)
+            dataset = dataset.remove_columns([mapping_table["label"]])
+            dataset = dataset.rename_column(mapping_table["label"] + "_1", mapping_table["label"])
+            mapping_table["endings"] = "endings"
+        elif task_type.endswith("multiple-choice"):
+            def process_label(example) -> dict:
+                ans_column = mapping_table["answer"]
+                answer = example[ans_column]
+                example[ans_column + "_1"] = str(int(answer) + 1)
+                choices = example[mapping_table["choices"]]
+                example["choices"] = ", ".join([f"{i + 1}. {choice}" for i, choice in enumerate(choices)])
+                return example
+
+            dataset = dataset.map(process_label)
+            dataset = dataset.remove_columns([mapping_table["answer"]])
+            dataset = dataset.rename_column(mapping_table["answer"] + "_1", mapping_table["answer"])
         elif task_type == "span-corruption":
             extra_tokens = self.tokenizer.additional_special_tokens \
                 if hasattr(self.tokenizer, "additional_special_tokens") else None
@@ -250,10 +296,12 @@ class SeqIO:
                 return example_output
 
             sample = next(iter(dataset))
+
             dataset = dataset.map(
                 process_label,
                 batched=True,
                 remove_columns=list(set(sample.keys()) - set(mapping_table.values()))
+
             )
 
         def example_function(example: dict) -> dict:
@@ -270,31 +318,44 @@ class SeqIO:
             }
 
         sample = next(iter(dataset))
-        _rm_columns = list(sample.keys() - {"input", "output"})
-        dataset = dataset.map(example_function, remove_columns=_rm_columns)
+        _rm_columns = list(set(sample.keys()) - {"input", "output"})
+        params = set(signature(dataset.map).parameters.keys()) - {"self", "function", "batched", "remove_columns"}
+        _additional_params = {k: v for k, v in kwargs.items() if k in params}
+        dataset = dataset.map(example_function, remove_columns=_rm_columns, **_additional_params)
         return dataset
 
     def transform(
             self,
             datalist_with_meta: List[Dict[str, Union[str, dict, AVAILABLE_DATASETS]]],
-            merge_method: str = "interleave"
+            merge_method: Literal["interleave", "concatenate"] = "interleave",
+            group_task: bool = False,
+            **kwargs
     ) -> AVAILABLE_DATASETS:
         total = []
         for data in datalist_with_meta:
-            total.append(
-                self._transform_single_dataset(
+            total.append({
+                "task_type": data["task_type"],
+                "dataset": self._transform_single_dataset(
                     task_type=data["task_type"],
                     language=data["language"],
                     dataset=data["dataset"],
                     mapping_table=data["mapping_table"],
-                    **data.get("kwargs", {})
+                    **data.get("kwargs", {}),
+                    **kwargs
                 )
-            )
+            })
             data.clear()
 
         interleave_function = partial(interleave_datasets, stopping_strategy="all_exhausted")
         _merge_function = interleave_function if merge_method == "interleave" else concatenate_datasets
-        return _merge_function(total)
+
+        if group_task:
+            merged = defaultdict(list)
+            for t in total:
+                merged[t["task_type"]].append(t["dataset"])
+            total = [{"task_type": k, "dataset": concatenate_datasets(v)} for k, v in merged.items()]
+
+        return _merge_function([t["dataset"] for t in total if t["dataset"] is not None])
 
 
 def translation_language_mapping(target, language_map: Dict[str, str]) -> dict:
@@ -402,7 +463,7 @@ def load_datasets_from_json(
                     data_auth_token=data["data_auth_token"],
                     split=data[split],
                     streaming=streaming
-                ).select(range(10)),
+                ),
                 "mapping_table": data["mapping_table"],
                 "kwargs": data.get("kwargs", {}),
                 "input_column": data.get("input_column", ["input"]),

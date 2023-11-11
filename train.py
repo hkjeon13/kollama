@@ -161,6 +161,16 @@ class DataParams:
         metadata={"help": "The column to reject from the dataset"}
     )
 
+    group_task: bool = field(
+        default=True,
+        metadata={"help": "Whether to group task"}
+    )
+
+    merging_method: str = field(
+        default="interleave",
+        metadata={"help": "The merging method"}
+    )
+
 
 @dataclass
 class SlackParams:
@@ -324,7 +334,6 @@ def main():
         tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
         model = model.resize_token_embeddings(len(tokenizer))
 
-
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
 
@@ -332,7 +341,9 @@ def main():
         data_name_or_path=data_args.data_name_or_path,
         data_auth_token=data_args.data_auth_token,
         streaming=data_args.streaming,
-        is_supervised_dataset=data_args.is_supervised_dataset
+        is_supervised_dataset=data_args.is_supervised_dataset,
+        group_task=data_args.group_task,
+        merging_method=data_args.merging_method,
     )
 
     if data_args.train_split_name in dataset:
