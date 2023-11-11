@@ -316,7 +316,8 @@ class SeqIO:
             io = self.rng.choice(candidates)
             return {
                 "input": io["input"].format(**{
-                    k: example[v] for k, v in mapping_table_for_string.items()
+                    k: (example[v] if isinstance(example[v], str) else example[v][0])
+                    for k, v in mapping_table_for_string.items()
                     if k in self.params_in_format_string(io["input"])
                 }),
                 "output": io["output"].format(**{
