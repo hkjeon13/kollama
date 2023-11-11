@@ -209,21 +209,19 @@ class SeqIO:
             dataset = dataset.rename_column(mapping_table["answer"] + "_1", mapping_table["answer"])
         elif task_type.endswith("copa"):
             def process_label(example) -> dict:
-                print(mapping_table)
-                print(example)
-                example["choices"] = " ".join(
-                    [f"{i + 1}. {example[choice]}" for i, choice in enumerate(mapping_table["choices"])])
+                example["choice_text"] = " ".join([f"{i + 1}. {example[c]}" for i, c in enumerate(mapping_table["choices"])])
                 example[mapping_table["label"] + "_1"] = str(int(example[mapping_table["label"]]) + 1)
                 return example
 
             dataset = dataset.map(process_label)
             dataset = dataset.remove_columns([mapping_table["label"]])
             dataset = dataset.rename_column(mapping_table["label"] + "_1", mapping_table["label"])
-            mapping_table["choices"] = "choices"
+            dataset = dataset.remove_columns(mapping_table["choices"])
+            dataset = dataset.rename_column("choice_text", "choices")
         elif task_type.endswith("hellaswag"):
             def process_label(example) -> dict:
                 idx = int(example[mapping_table["label"]])
-                example["endings"] = " ".join(
+                example["endings_text"] = " ".join(
                     [f"{i + 1}. {example[ending]}" for i, ending in enumerate(mapping_table["endings"])])
                 example[mapping_table["label"] + "_1"] = str(idx + 1)
                 return example
@@ -231,7 +229,8 @@ class SeqIO:
             dataset = dataset.map(process_label)
             dataset = dataset.remove_columns([mapping_table["label"]])
             dataset = dataset.rename_column(mapping_table["label"] + "_1", mapping_table["label"])
-            mapping_table["endings"] = "endings"
+            dataset = dataset.remove_columns(mapping_table["endings"])
+            dataset = dataset.rename_column("endings_text", "endings")
         elif task_type.endswith("multiple-choice"):
             def process_label(example) -> dict:
                 ans_column = mapping_table["answer"]
@@ -335,6 +334,7 @@ class SeqIO:
     ) -> AVAILABLE_DATASETS:
         total = []
         for data in datalist_with_meta:
+            data = data.copy()
             total.append({
                 "task_type": data["task_type"],
                 "dataset": self._transform_single_dataset(
