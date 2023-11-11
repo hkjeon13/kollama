@@ -207,6 +207,7 @@ class SeqIO:
             dataset = dataset.map(process_label)
             dataset = dataset.remove_columns([mapping_table["answer"]])
             dataset = dataset.rename_column(mapping_table["answer"] + "_1", mapping_table["answer"])
+
         elif task_type.endswith("copa"):
             def process_label(example) -> dict:
                 example["choice_text"] = " ".join([f"{i + 1}. {example[c]}" for i, c in enumerate(mapping_table["choices"])])
@@ -305,15 +306,21 @@ class SeqIO:
 
             )
 
+        mapping_table_for_string = mapping_table.copy()
+
         def example_function(example: dict) -> dict:
+            if task_type.endswith("copa"):
+                mapping_table_for_string["choices"] = "choices"
+            elif task_type.endswith("hellaswag"):
+                mapping_table_for_string["endings"] = "endings"
             io = self.rng.choice(candidates)
             return {
                 "input": io["input"].format(**{
-                    k: example[v] for k, v in mapping_table.items()
+                    k: example[v] for k, v in mapping_table_for_string.items()
                     if k in self.params_in_format_string(io["input"])
                 }),
                 "output": io["output"].format(**{
-                    k: example[v] for k, v in mapping_table.items()
+                    k: example[v] for k, v in mapping_table_for_string.items()
                     if k in self.params_in_format_string(io["output"])
                 }),
             }
