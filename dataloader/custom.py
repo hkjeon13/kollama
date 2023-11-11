@@ -209,6 +209,8 @@ class SeqIO:
             dataset = dataset.rename_column(mapping_table["answer"] + "_1", mapping_table["answer"])
         elif task_type.endswith("copa"):
             def process_label(example) -> dict:
+                print(mapping_table)
+                print(example)
                 example["choices"] = " ".join(
                     [f"{i + 1}. {example[choice]}" for i, choice in enumerate(mapping_table["choices"])])
                 example[mapping_table["label"] + "_1"] = str(int(example[mapping_table["label"]]) + 1)
