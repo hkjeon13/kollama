@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+
 @dataclass
 class LoraParams:
     apply_lora: bool = field(

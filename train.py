@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Literal, Union
-
 import datasets
 from transformers import (
     HfArgumentParser,
@@ -9,13 +8,13 @@ from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
-    PreTrainedModel,
     PreTrainedTokenizer
 )
 
 from dataloader import load
 from utils import get_tokenized_dataset, GenerationParams, get_callbacks, get_data_collator, get_special_tokens
-from params import LoraParams, BnBParams, SlackParams
+from utils.params import LoraParams, BnBParams, SlackParams
+
 
 @dataclass
 class ModelParams:
@@ -127,60 +126,13 @@ class DataParams:
     )
 
 
-
-def get_lora_model(
-        model: PreTrainedModel,
-        lora_config: LoraParams,
-        model_type: Literal["causal", "seq2seq"] = "causal",
-        print_trainable_parameters: bool = True,
-):
-    """
-    Get LoRA model
-    :param print_trainable_parameters:
-    :param model:
-    :param lora_config:
-    :param model_type:
-    :return:
-
-    >>> from transformers import AutoModelForCausalLM
-    >>> model = AutoModelForCausalLM.from_pretrained("psyche/kogpt")
-    >>> from dataclasses import dataclass
-    >>> @dataclass
-    ... class LoraParams:
-    ...     apply_lora: bool = True
-    ...     lora_r: float = 64
-    ...     lora_alpha: float = 16
-    ...     lora_dropout: float = 0.1
-    >>> lora_config = LoraParams()
-    >>> model = get_lora_model(model, lora_config, model_type="causal", print_trainable_parameters=False)
-    >>> model.__class__.__name__
-    'PeftModelForCausalLM'
-    """
-    try:
-        from peft import LoraConfig, TaskType, get_peft_model
-    except ImportError:
-        raise ImportError("Please install peft library to apply PEFT LoRA (e.g. $pip install peft)")
-
-    lora_config = LoraConfig(
-        task_type=TaskType.CAUSAL_LM if model_type == "causal" else TaskType.SEQ_2_SEQ_LM,
-        r=lora_config.lora_r,
-        lora_alpha=lora_config.lora_alpha,
-        lora_dropout=lora_config.lora_dropout,
-    )
-
-    model = get_peft_model(model, lora_config)
-    if print_trainable_parameters:
-        model.print_trainable_parameters()
-    return model
-
-
 def print_dataset_samples(
         tokenizer: PreTrainedTokenizer,
         dataset: Union[datasets.Dataset, datasets.IterableDataset],
         num_samples: int = 5
 ) -> None:
     """
-    Print dataset samples
+    데이터셋의 일부 샘플을 출력
     :param tokenizer:
     :param dataset:
     :param num_samples:
@@ -234,13 +186,34 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
     return additional_config
 
 
-def main():
+def main() -> None:
+    """
+    학습을 실행하는 메인 함수
+    * 학습 과정
+        1. HfArgumentParser를 이용하여 모델, 데이터, 학습 파라미터를 파싱
+        2. 모델과 토크나이저를 불러옴
+            - LoRA를 적용할 경우 모델에 LoRA를 적용
+            - 모델에 pad 토큰을 추가할 경우 토크나이저에 pad 토큰을 추가하고 모델의 토큰 임베딩 크기를 조정
+        3. 데이터셋을 불러옴
+            - 데이터셋을 토크나이징
+            - 데이터셋의 일부만 사용할 경우 일부만 사용
+        4. Trainer를 이용하여 학습
+            - 만약 학습을 실행하지 않고 평가만 실행할 경우 평가(do_train=False, do_eval=True)
+    :return:
+
+    """
+
+    # 1. HfArgumentParser를 이용하여 모델, 데이터, 학습 파라미터를 파싱
     parser = HfArgumentParser(
-        (ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams))
-    model_args, data_args, training_args, lora_config, bnb_config, generation_args, slack_args = parser.parse_args_into_dataclasses()
+        (ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams)
+    )
+
+    (model_args, data_args, training_args, lora_config,
+        bnb_config, generation_args, slack_args) = parser.parse_args_into_dataclasses()
 
     additional_config = get_bnb_config(bnb_config)
 
+    # 2. 모델과 토크나이저를 불러옴
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         revision=model_args.revision,
@@ -258,6 +231,7 @@ def main():
     )
 
     if lora_config.apply_lora:
+        from utils.lora_utils import get_lora_model
         model = get_lora_model(
             model, model_args, model_type=model_args.model_type
         )
@@ -270,6 +244,7 @@ def main():
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
 
+    # 3. 데이터셋을 불러옴
     dataset = load(
         data_name_or_path=data_args.data_name_or_path,
         data_auth_token=data_args.data_auth_token,
@@ -278,7 +253,7 @@ def main():
         group_task=data_args.group_task,
         merging_method=data_args.merging_method,
     )
-
+    ## 데이터셋을 토크나이징
     if data_args.train_split_name in dataset:
         dataset[data_args.train_split_name] = get_tokenized_dataset(
             dataset=dataset[data_args.train_split_name],
@@ -308,7 +283,7 @@ def main():
             is_train=False,
             remove_columns=True
         )
-
+    ## 데이터셋의 일부만 사용할 경우 일부만 사용
     if data_args.train_samples is not None:
         dataset[data_args.train_split_name] = dataset[data_args.train_split_name].select(range(data_args.train_samples))
 
@@ -332,6 +307,7 @@ def main():
 
     data_collator = get_data_collator(model, tokenizer, model_args)
 
+    # 4. Trainer를 이용하여 학습
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
