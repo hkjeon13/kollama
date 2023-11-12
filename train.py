@@ -130,6 +130,11 @@ class DataParams:
         metadata={"help": "The number of processes to use"}
     )
 
+    do_shuffle: bool = field(
+        default=False,
+        metadata={"help": "Whether to shuffle the dataset"}
+    )
+
 
 def print_dataset_samples(
         tokenizer: PreTrainedTokenizer,
@@ -257,7 +262,7 @@ def main() -> None:
         is_supervised_dataset=data_args.is_supervised_dataset,
         group_task=data_args.group_task,
         merging_method=data_args.merging_method,
-        shuffle=training_args.shuffle,
+        shuffle=data_args.do_shuffle,
         num_proc=data_args.num_proc,
     )
     ## 데이터셋을 토크나이징
