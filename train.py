@@ -125,6 +125,11 @@ class DataParams:
         metadata={"help": "The merging method"}
     )
 
+    num_proc: int = field(
+        default=1,
+        metadata={"help": "The number of processes to use"}
+    )
+
 
 def print_dataset_samples(
         tokenizer: PreTrainedTokenizer,
@@ -253,6 +258,7 @@ def main() -> None:
         group_task=data_args.group_task,
         merging_method=data_args.merging_method,
         shuffle=training_args.shuffle,
+        num_proc=data_args.num_proc,
     )
     ## 데이터셋을 토크나이징
     if data_args.train_split_name in dataset:
