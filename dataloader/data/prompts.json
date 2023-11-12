@@ -245,7 +245,6 @@
     "format": {
       "input": "What is the sentiment of the following sentence({names})? {text}",
       "output": "{category}"
-
     }
   },
   {
@@ -285,7 +284,7 @@
     "language": "ko",
     "format": {
       "input": "문맥: {context} 질문: {question} 답:",
-        "output": "{answer}"
+      "output": "{answer}"
     }
   },
   {
@@ -344,7 +343,6 @@
       "output": "{answer}"
     }
   },
-
   {
     "task": "instruction",
     "language": "en",
@@ -670,8 +668,7 @@
     "language": "ko",
     "format": {
       "input": "{question} 위 질문에 대한 적절한 답은? {choices}",
-        "output": "적절한 답은 {answer}번 입니다."
+      "output": "적절한 답은 {answer}번 입니다."
     }
   }
-
 ]

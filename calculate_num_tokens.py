@@ -1,7 +1,11 @@
-from dataloader.loader import load
-from transformers import HfArgumentParser
 from dataclasses import dataclass, field
 from multiprocessing import cpu_count
+
+from transformers import HfArgumentParser
+
+from dataloader.loader import load
+
+
 @dataclass
 class DataArguments:
     data_name_or_path: str = field(

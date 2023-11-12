@@ -88,8 +88,6 @@ def span_corruption_alignment(
     Returns:
         :obj:`List[str]`: The aligned tokens.
 
-    TODO:
-        Examples
     """
 
     new_tokens, n_skip, n_extra = [], 0, 0
@@ -210,7 +208,8 @@ class SeqIO:
 
         elif task_type.endswith("copa"):
             def process_label(example) -> dict:
-                example["choice_text"] = " ".join([f"{i + 1}. {example[c]}" for i, c in enumerate(mapping_table["choices"])])
+                example["choice_text"] = " ".join(
+                    [f"{i + 1}. {example[c]}" for i, c in enumerate(mapping_table["choices"])])
                 example[mapping_table["label"] + "_1"] = str(int(example[mapping_table["label"]]) + 1)
                 return example
 
