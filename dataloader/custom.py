@@ -338,6 +338,7 @@ class SeqIO:
             datalist_with_meta: List[Dict[str, Union[str, dict, AVAILABLE_DATASETS]]],
             merge_method: Literal["interleave", "concatenate"] = "interleave",
             group_task: bool = False,
+            shuffle: bool = False,
             **kwargs
     ) -> AVAILABLE_DATASETS:
         total = []
@@ -363,7 +364,11 @@ class SeqIO:
             merged = defaultdict(list)
             for t in total:
                 merged[t["task_type"]].append(t["dataset"])
-            total = [{"task_type": k, "dataset": concatenate_datasets(v)} for k, v in merged.items()]
+
+            total = [
+                {"task_type": k, "dataset": concatenate_datasets(v).shuffle() if shuffle else concatenate_datasets(v)}
+                for k, v in merged.items()
+            ]
 
         return _merge_function([t["dataset"] for t in total if t["dataset"] is not None])
 

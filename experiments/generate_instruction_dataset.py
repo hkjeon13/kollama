@@ -98,7 +98,7 @@ def main():
     for i, example in tqdm(enumerate(dataset)):
         if i < data_params.start_index:
             continue
-        model_output = get_answer_from_question(example[data_params.input_column_name])
+        model_output = get_answer_from_question(example[data_params.input_column_name], api_params.api_model_name)
         if model_output[api_params.api_model_name]:
             outputs.append(model_output)
         if len(outputs) % save_params.save_steps == 0 and len(outputs) > 0:

@@ -31,6 +31,7 @@ def load(
         is_supervised_dataset: bool = False,
         group_task: bool = False,
         merging_method: str = "interleave",
+        shuffle: bool = False,
         **kwargs
 ) -> Union[DatasetDict, IterableDatasetDict, Dataset, IterableDataset]:
     """
@@ -47,14 +48,14 @@ def load(
             path=data_name_or_path,
             split="train",
             streaming=streaming,
-            shuffle=kwargs.get("shuffle", False)
+            shuffle=shuffle,
         )
 
         eval_datasets = load_datasets_from_json(
             path=data_name_or_path,
             split="validation",
             streaming=streaming,
-            shuffle=False
+            shuffle=shuffle
         )
 
         merge_method = kwargs.get("merging_method", "interleave")
@@ -69,6 +70,7 @@ def load(
                 merge_method=merge_method,
                 group_task=group_task,
                 merging_method=merging_method,
+                shuffle=shuffle,
                 **kwargs
             )
 
@@ -77,6 +79,7 @@ def load(
                 merge_method=merge_method,
                 group_task=group_task,
                 merging_method=merging_method,
+                shuffle=shuffle,
                 **kwargs
             )
         else:

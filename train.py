@@ -252,6 +252,7 @@ def main() -> None:
         is_supervised_dataset=data_args.is_supervised_dataset,
         group_task=data_args.group_task,
         merging_method=data_args.merging_method,
+        shuffle=training_args.shuffle,
     )
     ## 데이터셋을 토크나이징
     if data_args.train_split_name in dataset:
