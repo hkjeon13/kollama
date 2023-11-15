@@ -247,7 +247,7 @@ def main() -> None:
     if model_args.add_pad_token:
         _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
         tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
-        model = model.resize_token_embeddings(len(tokenizer))
+        model.resize_token_embeddings(len(tokenizer))
 
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
