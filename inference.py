@@ -53,7 +53,6 @@ def main():
     generation_config = ff.GenerationConfig(**_target_params)
 
     ssm = ff.SSM(model_args.ssm_name_or_path)
-    ssm.set_generation_config(generation_config)
     model.compile(generation_config=generation_config, ssm=ssm)
 
     import time
