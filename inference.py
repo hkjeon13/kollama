@@ -42,16 +42,19 @@ def main():
         num_gpus=env_args.num_gpus,
         memory_per_gpu=env_args.memory_per_gpu,
         zero_copy_memory_per_node=env_args.zero_copy_memory_per_node,
+        tensor_parallelism_degree=env_args.num_gpus,
+        pipeline_parallelism_degree=1
     )
 
-    model = ff.LLM(model_args.llm_name_or_path,)
+    model = ff.LLM(model_args.llm_name_or_path)
     params = signature(ff.GenerationConfig.__init__).parameters.keys() - {"self"}
     _target_params = {}
     for p in params:
         if hasattr(generation_args, p) and getattr(generation_args, p) is not None:
             _target_params[p] = getattr(generation_args, p)
-    generation_config = ff.GenerationConfig(**_target_params)
+
     ssms = []
+    generation_config = ff.GenerationConfig(**_target_params)
     for name in model_args.ssm_name_or_path.split(","):
         if name:
             ssms.append(ff.SSM(name))
