@@ -1,6 +1,6 @@
 from transformers import HfArgumentParser
 from dataclasses import dataclass, field
-import flexflow as ff
+import flexflow.serve as ff
 from inspect import signature
 from utils import GenerationParams
 
