@@ -242,9 +242,7 @@ def main() -> None:
 
     if lora_config.apply_lora:
         from utils.lora_utils import get_lora_model
-        model = get_lora_model(
-            model, model_args, model_type=model_args.model_type
-        )
+        model = get_lora_model(model=model, lora_config=lora_config, model_type=model_args.model_type)
 
     if model_args.add_pad_token:
         _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
