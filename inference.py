@@ -53,14 +53,15 @@ def main():
 
     ssm = ff.SSMS(model_args.ssm_name_or_path)
     model.compile(generation_config=ff.GenerationConfig(**_target_params), ssms=[ssm])
-
+    import time
     while True:
         input_text = input("Input: ")
         if input_text == "exit":
             break
-
+        start = time.time()
         output = model.generate(input_text)
         print("Output:", output)
+        print("Time:{:.2f} s".format(time.time() - start))
 
 
 if __name__ == "__main__":
