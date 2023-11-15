@@ -48,7 +48,7 @@ def main():
     params = signature(ff.GenerationConfig.__init__).parameters.keys() - {"self"}
     _target_params = {}
     for p in params:
-        if hasattr(generation_args, p):
+        if hasattr(generation_args, p) and getattr(generation_args, p) is not None:
             _target_params[p] = getattr(generation_args, p)
     generation_config = ff.GenerationConfig(**_target_params)
     ssms = []
