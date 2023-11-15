@@ -50,11 +50,14 @@ def main():
     for p in params:
         if hasattr(generation_args, p):
             _target_params[p] = getattr(generation_args, p)
+    generation_config = ff.GenerationConfig(**_target_params)
+    ssms = [ff.SSM(name) for name in model_args.ssm_name_or_path.split(",") if name]
 
-    ssms = [ff.SSM(name) for name in model_args.ssm_name_or_path.split(",")]
     for ssm in ssms:
-        ssm.compile(_target_params)
-    model.compile(generation_config=ff.GenerationConfig(**_target_params), ssms=ssms)
+        ssm.compile(generation_config)
+
+    model.compile(generation_config=generation_config, ssms=ssms)
+
     import time
     while True:
         input_text = input("Input: ")
