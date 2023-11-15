@@ -51,15 +51,10 @@ def main():
         if hasattr(generation_args, p):
             _target_params[p] = getattr(generation_args, p)
     generation_config = ff.GenerationConfig(**_target_params)
-    ssms = []
-    for name in model_args.ssm_name_or_path.split(","):
-        if name:
-            ssms.append(ff.SSM(name))
 
-    for ssm in ssms:
-        ssm.compile(generation_config)
-
-    model.compile(generation_config=generation_config, ssms=ssms)
+    ssm = ff.SSM(model_args.ssm_name_or_path)
+    ssm.set_generation_config(generation_config)
+    model.compile(generation_config=generation_config, ssm=ssm)
 
     import time
     while True:
