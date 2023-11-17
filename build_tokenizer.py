@@ -35,6 +35,11 @@ class DataParams:
         default=1,
         metadata={"help": "The number of process"},
     )
+
+    num_examples: Optional[int] = field(
+        default=None,
+        metadata={"help": "The number of examples to use"},
+    )
     
 
 
@@ -69,7 +74,10 @@ def main():
     )
 
     def _generator() -> str:
-        for d in dataset["train"]:
+        loader = dataset["train"]
+        if data_params.num_examples is not None:
+            loader = loader.take(data_params.num_examples)
+        for d in loader:
             yield d["input"] + " " + d["output"]
 
     tokenizer.train_from_iterator(
