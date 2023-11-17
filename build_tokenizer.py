@@ -80,7 +80,7 @@ def main():
     os.makedirs(data_params.output_dir, exist_ok=True)
 
     tokenizer.save(os.path.join(data_params.output_dir, "tokenizer.json"))
-
+    
     tokenizer = LlamaTokenizer.from_pretrained(data_params.output_dir)
     tokenizer.add_special_tokens({
         "eos_token": "</s>",
