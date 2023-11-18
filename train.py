@@ -135,7 +135,7 @@ class DataParams:
         metadata={"help": "Whether to shuffle the dataset"}
     )
 
-    group_by_length: bool = field(
+    group_texts: bool = field(
         default=False,
         metadata={"help": "Whether to group by length"}
     )
@@ -282,7 +282,7 @@ def main() -> None:
             suffix=data_args.suffix,
             is_train=True,
             remove_columns=True,
-            group_by_length=data_args.group_by_length,
+            group_by_length=data_args.group_texts,
         )
 
     if data_args.eval_split_name in dataset:
