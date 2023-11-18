@@ -91,18 +91,6 @@ def get_tokenized_dataset(
 
     length_for_group = max_input_length - len(tokenizer.tokenize(prefix)) - len(tokenizer.tokenize(suffix))
 
-    def group_texts(examples):
-        new_texts, length = [[]], 0
-        for text in examples[input_column]:
-            text_length = len(tokenizer.tokenize(text))
-            if length + text_length > length_for_group:
-                length = 0
-                new_texts.append([])
-            new_texts[-1].append(text)
-            length += (text_length + end_length)
-        examples[input_column] = [end.join(texts) for texts in new_texts]
-        return examples
-
     def tokenize_function(examples):
         inputs, outputs = [], []
         examples[input_column] = [prefix + input_text + suffix for input_text in examples[input_column]]
@@ -111,6 +99,16 @@ def get_tokenized_dataset(
 
         if model_type == "causal" and is_train:
             inputs.append(examples[output_column])
+            if group_by_length:
+                new_inputs, length = [[]], 0
+                for inp_text, out_text in zip(*inputs):
+                    text_length = len(tokenizer.tokenize(inp_text+out_text))
+                    if length + text_length > length_for_group:
+                        length = 0
+                        new_inputs.append([])
+                    new_inputs[-1].append(" ".join([inp_text, out_text]))
+                    length += (text_length + end_length)
+                inputs = [[end.join(texts) for texts in new_inputs]]
 
         if model_type == "causal" and not is_train:
             tokenizer.padding_side = "left"
@@ -118,6 +116,7 @@ def get_tokenized_dataset(
         else:
             tokenizer.padding_side = "right"
             tokenizer.truncation_side = "right"
+
         tokenized_inputs = tokenizer(*inputs, padding="max_length", truncation=True, max_length=max_input_length)
 
         if model_type == "causal" and not is_train:
@@ -129,11 +128,6 @@ def get_tokenized_dataset(
 
         return tokenized_inputs
 
-    if group_by_length:
-        dataset = dataset.map(
-            group_texts,
-            batched=True,
-        )
     return dataset.map(
         tokenize_function,
         batched=True,
