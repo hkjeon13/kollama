@@ -71,7 +71,7 @@ def main():
         model_type=building_params.model_type
     )
 
-    print(f"Model trained and saved with prefix '{args.model_prefix}'")
+    print(f"Model trained and saved with prefix '{building_params.model_prefix}'")
 
 
 if __name__ == "__main__":
