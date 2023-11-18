@@ -2,6 +2,7 @@ from transformers import HfArgumentParser
 from dataclasses import dataclass, field
 from typing import Optional
 from train import load
+import sentencepiece as spm
 
 @dataclass
 class BuildingParams:
