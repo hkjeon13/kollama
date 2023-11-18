@@ -1,5 +1,6 @@
 from transformers import HfArgumentParser
 from dataclasses import dataclass, field
+from typing import Optional
 
 @dataclass
 class BuildingParams:
@@ -70,3 +71,6 @@ def main():
 
     print(f"Model trained and saved with prefix '{args.model_prefix}'")
 
+
+if __name__ == "__main__":
+    main()
