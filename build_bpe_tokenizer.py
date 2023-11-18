@@ -9,7 +9,6 @@ from tokenizers.models import BPE
 from tokenizers.normalizers import Sequence, Lowercase
 from tokenizers.pre_tokenizers import ByteLevel
 from tokenizers.trainers import BpeTrainer
-from transformers import LlamaTokenizer
 from typing import Callable, Optional
 from train import load
 
@@ -35,7 +34,7 @@ class DataParams:
         default=1,
         metadata={"help": "The number of process"},
     )
-
+    
     num_examples: Optional[int] = field(
         default=None,
         metadata={"help": "The number of examples to use"},
@@ -47,6 +46,7 @@ class DataParams:
 def load_json(path: str):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
 
 def main():
     parser = HfArgumentParser((DataParams,))
@@ -72,7 +72,7 @@ def main():
         shuffle=True,
         num_proc=data_params.num_proc,
     )
-
+    
     def _generator() -> str:
         loader = dataset["train"]
         if data_params.num_examples is not None:
@@ -89,16 +89,6 @@ def main():
 
     tokenizer.save(os.path.join(data_params.output_dir, "tokenizer.json"))
     
-    tokenizer = LlamaTokenizer.from_pretrained(data_params.output_dir)
-    tokenizer.add_special_tokens({
-        "eos_token": "</s>",
-        "bos_token": "<s>",
-        "unk_token": "<unk>",
-        "pad_token": "<pad>",
-    })
-
-    tokenizer.save_pretrained(os.path.join(data_params.output_dir, "hf"))
-
 
 if __name__ == "__main__":
     main()
