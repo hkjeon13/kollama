@@ -46,6 +46,7 @@ def get_tokenized_dataset(
         suffix: str = "",
         is_train: bool = True,
         remove_columns: Optional[Union[List[str], bool]] = None,
+        group_by_length: bool = False
 ) -> datasets.Dataset:
     """
     모델의 유형에 따라 입력과 출력을 토큰화하여 반환
@@ -60,6 +61,7 @@ def get_tokenized_dataset(
     :param suffix: 입력 뒤에 붙일 토큰
     :param is_train: 훈련 데이터인지 여부
     :param remove_columns: 제거할 컬럼
+    :param group_by_length: 길이별로 그룹화할지 여부
     :return:
         - 토큰화된 데이터셋
 
@@ -83,6 +85,23 @@ def get_tokenized_dataset(
     if isinstance(remove_columns, bool):
         keys = list(next(iter(dataset)).keys())
         remove_columns = keys if remove_columns else []
+
+    end = " ### "
+    end_length = len(tokenizer.tokenize(end))
+
+    length_for_group = max_input_length - len(tokenizer.tokenize(prefix)) - len(tokenizer.tokenize(suffix))
+
+    def group_texts(examples):
+        new_texts, length = [[]], 0
+        for text in examples[input_column]:
+            text_length = len(tokenizer.tokenize(text))
+            if length + text_length > length_for_group:
+                length = 0
+                new_texts.append([])
+            new_texts[-1].append(text)
+            length += (text_length + end_length)
+        examples[input_column] = [end.join(texts) for texts in new_texts]
+        return examples
 
     def tokenize_function(examples):
         inputs, outputs = [], []
@@ -110,6 +129,11 @@ def get_tokenized_dataset(
 
         return tokenized_inputs
 
+    if group_by_length:
+        dataset = dataset.map(
+            group_texts,
+            batched=True,
+        )
     return dataset.map(
         tokenize_function,
         batched=True,
