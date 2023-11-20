@@ -64,6 +64,7 @@ def main():
     model.compile(generation_config, ssms=ssms)
 
     import time
+
     while True:
         input_text = input("Input: ")
         if input_text == "exit":
