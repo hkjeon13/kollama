@@ -177,7 +177,12 @@ class SeqIO:
             raise ValueError("There is no prompt for task_type: {} and language: {}".format(task_type, language))
 
         if task_type.endswith("classification"):
-            names = dataset.features[mapping_table["category"]].names
+            names = None
+            if mapping_table["category"] in dataset.features:
+                names = dataset.features[mapping_table["category"]].names
+            elif "category_mapping" in mapping_table:
+                names = mapping_table["category_mapping"]
+
             if names is not None:
                 def process_label(example) -> dict:
                     example[mapping_table["category"]] = names[example[mapping_table["category"]]]
@@ -185,6 +190,7 @@ class SeqIO:
                     return example
 
                 dataset = dataset.map(process_label)
+
             mapping_table["names"] = "names"
         elif task_type.endswith("mrc"):
             def process_label(example) -> dict:
