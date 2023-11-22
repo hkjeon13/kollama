@@ -41,6 +41,7 @@ def main():
     for info in tqdm(data_info):
         dataset = load_dataset(*info["data_name_or_path"].split(","), use_auth_token=info["data_auth_token"])
         target_dir = os.path.join(download_params.output_dir, trim_name(info["data_name_or_path"]))
+        os.makedirs(target_dir, exist_ok=True)
         for key, value in dataset.items():
             num_shard = (value.size_in_bytes // int(1e+8)) + 1
             for i in range(num_shard):
