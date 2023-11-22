@@ -5,8 +5,7 @@ import string
 from collections import defaultdict, OrderedDict
 from functools import partial
 from inspect import signature
-from typing import Dict, List, Union, Literal
-
+from typing import Dict, List, Union, Literal, Optional
 import numpy as np
 from datasets import (
     Dataset,
@@ -408,14 +407,28 @@ def translation_language_mapping(target, language_map: Dict[str, str]) -> dict:
     return target
 
 
-def _load_hf_dataset(data_name_or_path: str, data_auth_token: str, split="train",
-                     streaming=False) -> AVAILABLE_DATASETS:
+def _load_hf_dataset(
+        data_name_or_path: str,
+        data_auth_token: Optional[str],
+        split: str = "train",
+        streaming: bool = False
+) -> AVAILABLE_DATASETS:
     if data_name_or_path.endswith(".txt"):
-        return load_dataset("text", data_files={"train": data_name_or_path}, streaming=streaming, split=split)
-    elif os.path.isdir(data_name_or_path):
+        return load_dataset("text", data_files={split: data_name_or_path}, streaming=streaming, split=split)
+
+    elif data_name_or_path.startswith(("parquet,", "text,", "json,", "csv,")):
         from glob import glob
-        return load_dataset("text", data_files={"train": glob(os.path.join(data_name_or_path, "*.txt"))},
-                            streaming=streaming, split=split)
+
+        splited_name = data_name_or_path.split(",")
+        assert len(splited_name) == 2, "parquet dataset should be in the format of <type>,<path>"
+        _type, _path = splited_name
+
+        _extension = _type.replace(",", "").replace("text", "txt")
+        files = glob(os.path.join(splited_name[1], f"{split}-*.{_extension}"))
+        assert len(files) > 0, f"There is no {split} file in {splited_name[1]}"
+
+        return load_dataset(_type, data_files={split: files}, streaming=streaming, split=split)
+
     return load_dataset(
         *data_name_or_path.split(","),
         use_auth_token=data_auth_token,
