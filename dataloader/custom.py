@@ -178,7 +178,7 @@ class SeqIO:
 
         if task_type.endswith("classification"):
             names = None
-            if mapping_table["category"] in dataset.features:
+            if dataset.features is not None and mapping_table["category"] in dataset.features:
                 names = dataset.features[mapping_table["category"]].names
             elif "category_mapping" in mapping_table:
                 names = mapping_table["category_mapping"]
