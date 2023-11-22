@@ -15,7 +15,7 @@ def load_json(path:str) -> dict:
 @dataclass
 class DownloadParams:
     data_info_path: str = field(
-        default="data_info.json",
+        default="data_info_local.json",
         metadata={"help": "The data info path to use"}
     )
 

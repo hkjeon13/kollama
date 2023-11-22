@@ -16,7 +16,7 @@ from train import load
 @dataclass
 class DataParams:
     data_info_path: str = field(
-        default="data_info.json",
+        default="data_info_local.json",
         metadata={"help": "데이터셋 정보가 담긴 json 파일의 경로를 설정합니다."}
     )
 

@@ -9,7 +9,7 @@ from dataloader.loader import load
 @dataclass
 class DataArguments:
     data_name_or_path: str = field(
-        default="data_info.json",
+        default="data_info_local.json",
         metadata={"help": "Path to dataset info file"},
     )
 
