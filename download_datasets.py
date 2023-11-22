@@ -39,7 +39,7 @@ def main():
 
     data_info = load_json(download_params.data_info_path)
     for info in tqdm(data_info):
-        dataset = load_dataset(**info["data_name_or_path"].split(","), use_auth_token=info["data_auth_token"])
+        dataset = load_dataset(*info["data_name_or_path"].split(","), use_auth_token=info["data_auth_token"])
         target_dir = os.path.join(download_params.output_dir, trim_name(info["data_name_or_path"]))
         for key, value in dataset.items():
             num_shard = (value.size_in_bytes // 1e+8) + 1
@@ -48,6 +48,7 @@ def main():
                 value.shard(num_shard, i, contiguous=True).to_parquet(path)
 
     print("Done!")
+
 
 if __name__ == "__main__":
     main()
