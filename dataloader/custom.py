@@ -181,8 +181,7 @@ class SeqIO:
             if dataset.features is not None and mapping_table["category"] in dataset.features:
                 names = dataset.features[mapping_table["category"]].names
             elif "category_mapping" in mapping_table:
-                names = {int(k): v for k, v in mapping_table["category_mapping"].items()}
-
+                names = [name for _, name in sorted(mapping_table["category_mapping"].items(), key=lambda x: x[1])]
             if names is not None:
                 def process_label(example) -> dict:
                     example[mapping_table["category"]] = names[example[mapping_table["category"]]]
