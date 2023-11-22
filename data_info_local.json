@@ -1,0 +1,433 @@
+[
+  {
+    "task_type": "translation",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_socsci_kozh",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "source": "source",
+      "target": "target",
+      "source_language": "source_language",
+      "target_language": "target_language"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["source"],
+    "output_column": "target"
+  },
+  {
+    "task_type": "translation",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_broadcast",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "source": "source",
+      "target": "target",
+      "source_language": "source_language",
+      "target_language": "target_language"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["source"],
+    "output_column": "target"
+  },
+  {
+    "task_type": "translation",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_tech_koen",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "source": "source",
+      "target": "target",
+      "source_language": "source_language",
+      "target_language": "target_language"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["source"],
+    "output_column": "target"
+  },
+  {
+    "task_type": "translation",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_foods",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "source": "source",
+      "target": "target",
+      "source_language": "source_language",
+      "target_language": "target_language"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["source"],
+    "output_column": "target"
+  },
+  {
+    "task_type": "summarization",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_news",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "passage": "passage",
+      "summary": "summary"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["passage"],
+    "output_column":"summary"
+  },
+  {
+    "task_type": "summarization",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_tech",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "passage": "context",
+      "summary": "summary"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["context"],
+    "output_column":"summary"
+  },
+
+  {
+    "task_type": "summarization",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_books",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "passage": "passage",
+      "summary": "summary"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["passage"],
+    "output_column":"summary"
+  },
+  {
+    "task_type": "summarization",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_papers",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "passage": "summary_entire_orginal_text",
+      "summary": "summary_entire_summary_text"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["summary_entire_orginal_text"],
+    "output_column":"summary_entire_summary_text"
+  },
+  {
+    "task_type": "summarization",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_documents",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "passage": "passage",
+      "summary": "summary"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["passage"],
+    "output_column":"summary"
+  },
+  {
+    "task_type": "summarization",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_broadcast",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "passage": "passage",
+      "summary": "summary"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["passage"],
+    "output_column":"summary"
+  },
+  {
+    "task_type": "sentiment-classification",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/nsmc",
+    "data_auth_token": null,
+    "mapping_table": {
+      "text": "document",
+      "category": "label"
+    },
+    "train": "train",
+    "validation": "test",
+    "input_column": ["document"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "category-classification",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/klue_ynat",
+    "data_auth_token": null,
+    "mapping_table": {
+      "text": "title",
+      "category": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["title"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "mrc",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_commonsense",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "context": "context",
+      "question": "question",
+      "answer": "answers"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["context", "question"],
+    "output_column": "answers"
+  },
+  {
+    "task_type": "mrc",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_tech",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "context": "context",
+      "question": "question",
+      "answer": "answers"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["context", "question"],
+    "output_column": "answers"
+  },
+  {
+    "task_type": "mrc",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_books",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "context": "context",
+      "question": "question",
+      "answer": "answers"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["context", "question"],
+    "output_column": "answers"
+  },
+  {
+    "task_type": "mrc",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_admin",
+    "data_auth_token": "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",
+    "mapping_table": {
+      "context": "context",
+      "question": "question",
+      "answer": "answers"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["context", "question"],
+    "output_column": "answers"
+  },
+  {
+    "task_type": "instruction",
+    "language": "en",
+    "data_name_or_path": "parquet,data/causal-lm_instructions",
+    "data_auth_token": null,
+    "mapping_table": {
+      "instruction": "instruction",
+      "input": "input",
+      "output": "output"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["instruction", "input"],
+    "output_column": "output"
+  },
+  {
+    "task_type": "instruction",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/psyche_instruction-gpt-3_5",
+    "data_auth_token": null,
+    "mapping_table": {
+      "input": "question",
+      "output": "gpt-3.5-turbo"
+    },
+    "train": "train",
+    "validation": null,
+    "input_column": ["question"],
+    "output_column": "gpt-3.5-turbo"
+  },
+  {
+    "task_type": "boolq",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/skt_kobest_v1_boolq",
+    "data_auth_token": null,
+    "mapping_table": {
+      "passage": "paragraph",
+      "question": "question",
+      "answer": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["paragraph", "question"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "boolq",
+    "language": "en",
+    "data_name_or_path": "parquet,data/super_glue_boolq",
+    "data_auth_token": null,
+    "mapping_table": {
+      "passage": "passage",
+      "question": "question",
+      "answer": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["passage", "question"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "copa",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/skt_kobest_v1_copa",
+    "data_auth_token": null,
+    "mapping_table": {
+      "premise": "premise",
+      "question": "question",
+      "choices": ["alternative_1", "alternative_2"],
+      "label": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["premise", "question", "alternative_1", "alternative_2"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "copa",
+    "language": "en",
+    "data_name_or_path": "parquet,data/classla_copa_hr",
+    "data_auth_token": null,
+    "mapping_table": {
+      "premise": "premise",
+      "question": "question",
+      "choices": ["choice1", "choice2"],
+      "label": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["premise", "question", "choice1", "choice2"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "copa",
+    "language": "en",
+    "data_name_or_path": "parquet,data/super_glue_copa",
+    "data_auth_token": null,
+    "mapping_table": {
+      "premise": "premise",
+      "question": "question",
+      "choices": ["choice1", "choice2"],
+      "label": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["premise", "question", "choice1", "choice2"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "hellaswag",
+    "language": "ko",
+    "data_name_or_path": "parquet,data/skt_kobest_v1_hellaswag",
+    "data_auth_token": null,
+    "mapping_table": {
+      "context": "context",
+      "endings": ["ending_1", "ending_2", "ending_3", "ending_4"],
+      "label": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["context", "ending_1", "ending_2", "ending_3", "ending_4"],
+    "output_column": "label"
+  },
+  {
+    "task_type": "instruction",
+    "language": "en",
+    "data_name_or_path": "parquet,data/gsm8k_main",
+    "data_auth_token": null,
+    "mapping_table": {
+      "input": "question",
+      "output": "answer"
+    },
+    "train": "train",
+    "validation": "test",
+    "input_column": ["question"],
+    "output_column": "answer"
+  },
+  {
+    "task_type": "instruction",
+    "language": "en",
+    "data_name_or_path": "parquet,data/truthful_qa_generation",
+    "data_auth_token": null,
+    "mapping_table": {
+      "input": "question",
+      "output": "best_answer"
+    },
+    "train": "validation",
+    "validation": null,
+    "input_column": ["question"],
+    "output_column": "best_answer"
+  },
+  {
+    "task_type": "multiple-choice",
+    "language": "en",
+    "data_name_or_path": "parquet,data/lighteval_mmlu_all",
+    "data_auth_token": null,
+    "mapping_table": {
+      "question": "question",
+      "choices": "choices",
+      "answer": "answer"
+    },
+    "train": "auxiliary_train",
+    "validation": "validation",
+    "input_column": ["question", "choices"],
+    "output_column": "answer"
+  },
+  {
+    "task_type": "summarization",
+    "language": "en",
+    "data_name_or_path": "parquet,data/cnn_dailymail_3_0_0",
+    "data_auth_token": null,
+    "mapping_table": {
+      "passage": "article",
+      "summary": "highlights"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["article"],
+    "output_column": "highlights"
+  },
+  {
+    "task_type": "copa",
+    "language": "en",
+    "data_name_or_path": "parquet,data/piqa",
+    "data_auth_token": null,
+    "mapping_table": {
+      "question": "goal",
+      "choices": ["sol1", "sol2"],
+      "label": "label"
+    },
+    "train": "train",
+    "validation": "validation",
+    "input_column": ["premise", "question", "choice1", "choice2"],
+    "output_column": "label"
+  }
+]
