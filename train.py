@@ -253,6 +253,13 @@ def main() -> None:
         _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
         tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
         model.resize_token_embeddings(len(tokenizer))
+    else:
+        if "pad_token" in tokenizer.special_tokens_map:
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            print(f"pad token is changed to {tokenizer.eos_token}(eos token)")
+        else:
+            raise ValueError("pad token is not in the tokenizer")
 
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
@@ -344,6 +351,7 @@ def main() -> None:
         print("***** Eval results *****")
         for key, value in result.items():
             print(f"  {key} = {value:.3f}")
+
 
 
 if __name__ == "__main__":
