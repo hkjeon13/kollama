@@ -254,7 +254,7 @@ def main() -> None:
         tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
         model.resize_token_embeddings(len(tokenizer))
     else:
-        if "pad_token" in tokenizer.special_tokens_map:
+        if "eos_token" in tokenizer.special_tokens_map:
             tokenizer.pad_token = tokenizer.eos_token
             tokenizer.pad_token_id = tokenizer.eos_token_id
             print(f"pad token is changed to {tokenizer.eos_token}(eos token)")
