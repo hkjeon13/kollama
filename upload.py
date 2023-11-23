@@ -30,6 +30,11 @@ def main():
         use_auth_token=model_params.use_auth_token,
         repo_name=model_params.upload_name
     )
+    tokenizer.push_to_hub(
+        model_params.upload_name,
+        use_auth_token=model_params.use_auth_token,
+        repo_name=model_params.upload_name
+    )
 
     print("Done!")
 
