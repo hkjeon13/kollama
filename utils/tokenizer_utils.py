@@ -101,7 +101,7 @@ def get_tokenized_dataset(
             for input_text in examples[input_column]
         ]
         output_examples = examples.get(output_column)
-
+        print("output_example:", output_examples)
         inputs.append(examples[input_column])
 
         if output_examples is not None:
