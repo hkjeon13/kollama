@@ -14,7 +14,7 @@ from transformers import (
 from dataloader import load
 from utils import get_tokenized_dataset, GenerationParams, get_callbacks, get_data_collator, get_special_tokens
 from utils.params import LoraParams, BnBParams, SlackParams
-
+import os
 
 @dataclass
 class ModelParams:
@@ -40,6 +40,11 @@ class ModelParams:
     add_pad_token: bool = field(
         default=False,
         metadata={"help": "Whether to add pad token"}
+    )
+    
+    wandb_project: str = field(
+        default="kollama",
+        metadata={"help": "The wandb project name"}   
     )
 
 
@@ -222,9 +227,11 @@ def main() -> None:
     parser = HfArgumentParser(
         (ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams)
     )
-
+    
     (model_args, data_args, training_args, lora_config,
         bnb_config, generation_args, slack_args) = parser.parse_args_into_dataclasses()
+    
+    os.environ["WANDB_PROJECT"] = model_args.wandb_project
 
     additional_config = get_bnb_config(bnb_config)
 
