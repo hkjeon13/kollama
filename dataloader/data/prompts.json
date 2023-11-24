@@ -670,5 +670,12 @@
       "input": "{question} 위 질문에 대한 적절한 답은? {choices}",
       "output": "적절한 답은 {answer}번 입니다."
     }
+  },
+  {
+    "task": "corpus",
+    "language": "ko",
+    "format": {
+      "input": "{text}"
+    }
   }
 ]

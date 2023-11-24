@@ -87,26 +87,39 @@ def get_tokenized_dataset(
         remove_columns = keys if remove_columns else []
 
     end = " ### "
+    
     end_length = len(tokenizer.tokenize(end))
-
-    length_for_group = max_input_length - len(tokenizer.tokenize(prefix)) - len(tokenizer.tokenize(suffix))
+    prefix_length = len(tokenizer.tokenize(prefix))
+    suffix_length = len(tokenizer.tokenize(suffix))
+    
+    length_for_group = max_input_length - prefix_length - suffix_length
 
     def tokenize_function(examples):
         inputs, outputs = [], []
-        examples[input_column] = [prefix + input_text + suffix for input_text in examples[input_column]]
+        examples[input_column] = [
+            prefix + input_text + suffix 
+            for input_text in examples[input_column]
+        ]
+        output_examples = examples.get(output_column)
+
         inputs.append(examples[input_column])
-        outputs.append(examples[output_column])
+
+        if output_examples is not None:
+            outputs.append(output)
 
         if model_type == "causal" and is_train:
-            inputs.append(examples[output_column])
+            if output_examples is not None:
+                inputs.append(output_examples)
+
             if group_by_length:
                 new_inputs, length = [[]], 0
-                for inp_text, out_text in zip(*inputs):
-                    text_length = len(tokenizer.tokenize(inp_text+out_text))
+                for input_tuple in zip(*inputs):
+                    text = " ".join(input_tuple)
+                    text_length = len(tokenizer.tokenize(text))
                     if length + text_length > length_for_group:
                         length = 0
                         new_inputs.append([])
-                    new_inputs[-1].append(" ".join([inp_text, out_text]))
+                    new_inputs[-1].append(" ".join(text))
                     length += (text_length + end_length)
                 inputs = [[end.join(texts) for texts in new_inputs]]
 
@@ -116,15 +129,30 @@ def get_tokenized_dataset(
         else:
             tokenizer.padding_side = "right"
             tokenizer.truncation_side = "right"
-
-        tokenized_inputs = tokenizer(*inputs, padding="max_length", truncation=True, max_length=max_input_length)
+        
+        tokenized_inputs = tokenizer(
+            *inputs, 
+            padding="max_length", 
+            truncation=True, 
+            max_length=max_input_length
+        )
 
         if model_type == "causal" and not is_train:
             tokenizer.padding_side = "right"
             tokenizer.truncation_side = "right"
 
-        tokenized_inputs["labels"] = tokenized_inputs["input_ids"].copy() if model_type == "causal" and is_train \
-            else tokenizer(*outputs, padding="max_length", truncation=True, max_length=max_output_length)["input_ids"]
+        if model_type == "causal" and is_train:
+            tokenized_inputs["labels"] = tokenized_inputs["input_ids"].copy()
+        else:
+            if not outputs:
+                raise ValueError("output_examples is None")
+            
+            tokenized_inputs["labels"] = tokenizer(
+                *outputs,
+                max_length=max_output_length,
+                padding="max_length",
+                truncation=True
+            ).input_ids
 
         return tokenized_inputs
 
