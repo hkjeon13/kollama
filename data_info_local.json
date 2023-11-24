@@ -3,7 +3,7 @@
     "task_type": "translation",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_socsci_kozh",
-    "data_auth_token": "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",
+    "data_auth_token": null,
     "mapping_table": {
       "source": "source",
       "target": "target",
@@ -19,7 +19,7 @@
     "task_type": "translation",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_broadcast",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "source": "source",
       "target": "target",
@@ -35,7 +35,7 @@
     "task_type": "translation",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_tech_koen",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "source": "source",
       "target": "target",
@@ -51,7 +51,7 @@
     "task_type": "translation",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_nmt_foods",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "source": "source",
       "target": "target",
@@ -67,7 +67,7 @@
     "task_type": "summarization",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_news",
-    "data_auth_token": "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",
+    "data_auth_token": null,
     "mapping_table": {
       "passage": "passage",
       "summary": "summary"
@@ -81,7 +81,7 @@
     "task_type": "summarization",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_tech",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "passage": "context",
       "summary": "summary"
@@ -96,7 +96,7 @@
     "task_type": "summarization",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_books",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "passage": "passage",
       "summary": "summary"
@@ -110,7 +110,7 @@
     "task_type": "summarization",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_papers",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "passage": "summary_entire_orginal_text",
       "summary": "summary_entire_summary_text"
@@ -124,7 +124,7 @@
     "task_type": "summarization",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_documents",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "passage": "passage",
       "summary": "summary"
@@ -138,7 +138,7 @@
     "task_type": "summarization",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_sum_broadcast",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "passage": "passage",
       "summary": "summary"
@@ -193,7 +193,7 @@
     "task_type": "mrc",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_commonsense",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "context": "context",
       "question": "question",
@@ -208,7 +208,7 @@
     "task_type": "mrc",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_tech",
-    "data_auth_token": "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",
+    "data_auth_token": null,
     "mapping_table": {
       "context": "context",
       "question": "question",
@@ -223,7 +223,7 @@
     "task_type": "mrc",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_books",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "context": "context",
       "question": "question",
@@ -238,7 +238,7 @@
     "task_type": "mrc",
     "language": "ko",
     "data_name_or_path": "parquet,data/korean-benchmark_aihub_mrc_admin",
-    "data_auth_token": "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",
+    "data_auth_token":  null,
     "mapping_table": {
       "context": "context",
       "question": "question",
