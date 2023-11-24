@@ -73,21 +73,21 @@ def load(
                 shuffle=shuffle,
                 **kwargs
             )
-
-            eval_datasets = seqio.transform(
-                eval_datasets,
-                merge_method=merge_method,
-                group_task=group_task,
-                merging_method=merging_method,
-                shuffle=shuffle,
-                **kwargs
-            )
+            if eval_datasets:
+                eval_datasets = seqio.transform(
+                    eval_datasets,
+                    merge_method=merge_method,
+                    group_task=group_task,
+                    merging_method=merging_method,
+                    shuffle=shuffle,
+                    **kwargs
+                )
         else:
             from datasets import concatenate_datasets, interleave_datasets
             _merge_method = interleave_datasets if merge_method == "interleave" else concatenate_datasets
 
             train_datasets = _merge_method([trim_dataset(d) for d in train_datasets])
-            eval_datasets = _merge_method([trim_dataset(d) for d in eval_datasets])
+            eval_datasets = _merge_method([trim_dataset(d) for d in eval_datasets]) if eval_datasets else None
 
         return (DatasetDict if not streaming else IterableDatasetDict)({
             "train": train_datasets,

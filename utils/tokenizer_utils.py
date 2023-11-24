@@ -105,7 +105,7 @@ def get_tokenized_dataset(
         inputs.append(examples[input_column])
 
         if output_examples is not None:
-            outputs.append(output)
+            outputs.append(output_examples)
 
         if model_type == "causal" and is_train:
             if output_examples is not None:

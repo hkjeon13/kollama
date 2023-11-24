@@ -317,18 +317,21 @@ class SeqIO:
             elif task_type.endswith("hellaswag"):
                 mapping_table_for_string["endings"] = "endings"
             io = self.rng.choice(candidates)
-            return {
+            new_example = {
                 "input": io["input"].format(**{
                     k: (example[v][0] if isinstance(example[v], list) else example[v])
                     for k, v in mapping_table_for_string.items()
                     if k in self.params_in_format_string(io["input"])
-                }),
-                "output": io["output"].format(**{
+                })
+            }
+
+            if "output" in io:
+                new_example["output"] = io["output"].format(**{
                     k: (example[v][0] if isinstance(example[v], list) else example[v])
                     for k, v in mapping_table_for_string.items()
                     if k in self.params_in_format_string(io["output"])
-                }),
-            }
+                })
+            return new_example
 
         sample = next(iter(dataset))
         _rm_columns = list(set(sample.keys()) - {"input", "output"})

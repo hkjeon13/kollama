@@ -675,7 +675,7 @@
     "task": "corpus",
     "language": "ko",
     "format": {
-      "input": "{text}"
+      "input": "{input}"
     }
   }
 ]
