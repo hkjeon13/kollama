@@ -118,7 +118,7 @@ def get_tokenized_dataset(
                     if length + text_length > length_for_group:
                         length = 0
                         new_inputs.append([])
-                    new_inputs[-1].append(" ".join(text))
+                    new_inputs[-1].append(text)
                     length += (text_length + end_length)
                 inputs = [[end.join(texts) for texts in new_inputs]]
 
