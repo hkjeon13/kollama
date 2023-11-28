@@ -1,7 +1,10 @@
-from transformers import HfArgumentParser, TrainingArguments, Trainer, LlamaConfig, LlamaModel
 from dataclasses import dataclass, field
 from inspect import signature
+
+from transformers import HfArgumentParser, LlamaConfig, LlamaModel
+
 from params import LlamaParams
+
 
 @dataclass
 class BuildParams:
@@ -9,6 +12,7 @@ class BuildParams:
         default="new_model",
         metadata={"help": "The output dir to use"}
     )
+
 
 def main():
     parser = HfArgumentParser((LlamaParams, BuildParams))
@@ -23,7 +27,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-

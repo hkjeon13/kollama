@@ -1,8 +1,11 @@
-from transformers import HfArgumentParser
 from dataclasses import dataclass, field
-import flexflow.serve as ff
 from inspect import signature
+
+import flexflow.serve as ff
+from transformers import HfArgumentParser
+
 from utils import GenerationParams
+
 
 @dataclass
 class ModelParams:
@@ -15,6 +18,7 @@ class ModelParams:
         default="JackFram/llama-68m",
         metadata={"help": "The model checkpoint for weights initialization."},
     )
+
 
 @dataclass
 class EnvParams:
@@ -77,6 +81,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-

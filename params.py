@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
+
+
 @dataclass
 class LlamaParams:
     vocab_size: int = field(

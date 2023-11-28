@@ -1,8 +1,11 @@
-from transformers import HfArgumentParser
 from dataclasses import dataclass, field
 from typing import Optional
-from train import load
+
 import sentencepiece as spm
+from transformers import HfArgumentParser
+
+from train import load
+
 
 @dataclass
 class BuildingParams:
@@ -11,7 +14,6 @@ class BuildingParams:
         metadata={"help": "The output directory"},
     )
 
-    
     model_type: str = field(
         default="bpe",
         metadata={"help": "The number of process"},
@@ -21,7 +23,6 @@ class BuildingParams:
         default=32000,
         metadata={"help": "The size of vocabulary"},
     )
-
 
 
 @dataclass
@@ -43,7 +44,7 @@ class DataPrams:
 
 
 def main():
-    parser = HfArgumentParser((BuildingParams,DataPrams))
+    parser = HfArgumentParser((BuildingParams, DataPrams))
     building_params, data_params = parser.parse_args_into_dataclasses()
 
     dataset = load(

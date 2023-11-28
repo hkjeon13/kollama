@@ -1,6 +1,9 @@
 from typing import Literal
+
 from transformers import PreTrainedModel
+
 from .params import LoraParams
+
 try:
     from peft import PeftModel, LoraConfig, TaskType, get_peft_model
 except ImportError:
@@ -49,4 +52,3 @@ def get_lora_model(
         model.print_trainable_parameters()
 
     return model
-

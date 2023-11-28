@@ -1,15 +1,14 @@
-import os
 import json
-from tqdm import tqdm
-from transformers import HfArgumentParser
+import os
 from dataclasses import dataclass, field
-from datasets import load_dataset
-from tokenizers import Tokenizer,decoders
+from typing import Optional
+
+from tokenizers import Tokenizer, decoders
 from tokenizers.models import BPE
-from tokenizers.normalizers import Sequence, Lowercase
 from tokenizers.pre_tokenizers import ByteLevel
 from tokenizers.trainers import BpeTrainer
-from typing import Callable, Optional
+from transformers import HfArgumentParser
+
 from train import load
 
 
@@ -29,18 +28,16 @@ class DataParams:
         default=32000,
         metadata={"help": "The size of vocabulary"},
     )
-    
+
     num_proc: int = field(
         default=1,
         metadata={"help": "The number of process"},
     )
-    
+
     num_examples: Optional[int] = field(
         default=None,
         metadata={"help": "The number of examples to use"},
     )
-    
-
 
 
 def load_json(path: str):
@@ -72,7 +69,7 @@ def main():
         shuffle=True,
         num_proc=data_params.num_proc,
     )
-    
+
     def _generator() -> str:
         loader = dataset["train"]
         if data_params.num_examples is not None:
@@ -88,7 +85,7 @@ def main():
     os.makedirs(data_params.output_dir, exist_ok=True)
 
     tokenizer.save(os.path.join(data_params.output_dir, "tokenizer.json"))
-    
+
 
 if __name__ == "__main__":
     main()

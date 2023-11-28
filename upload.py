@@ -1,5 +1,6 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, HfArgumentParser
 from dataclasses import dataclass, field
+
+from transformers import AutoTokenizer, AutoModelForCausalLM, HfArgumentParser
 
 
 @dataclass

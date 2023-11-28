@@ -87,17 +87,17 @@ def get_tokenized_dataset(
         remove_columns = keys if remove_columns else []
 
     end = " ### "
-    
+
     end_length = len(tokenizer.tokenize(end))
     prefix_length = len(tokenizer.tokenize(prefix))
     suffix_length = len(tokenizer.tokenize(suffix))
-    
+
     length_for_group = max_input_length - prefix_length - suffix_length
 
     def tokenize_function(examples):
         inputs, outputs = [], []
         examples[input_column] = [
-            prefix + input_text + suffix 
+            prefix + input_text + suffix
             for input_text in examples[input_column]
         ]
         output_examples = examples.get(output_column)
@@ -128,11 +128,11 @@ def get_tokenized_dataset(
         else:
             tokenizer.padding_side = "right"
             tokenizer.truncation_side = "right"
-        
+
         tokenized_inputs = tokenizer(
-            *inputs, 
-            padding="max_length", 
-            truncation=True, 
+            *inputs,
+            padding="max_length",
+            truncation=True,
             max_length=max_input_length
         )
 
@@ -145,7 +145,7 @@ def get_tokenized_dataset(
         else:
             if not outputs:
                 raise ValueError("output_examples is None")
-            
+
             tokenized_inputs["labels"] = tokenizer(
                 *outputs,
                 max_length=max_output_length,
