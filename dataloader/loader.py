@@ -86,13 +86,10 @@ def load(
             from datasets import concatenate_datasets, interleave_datasets
             _merge_method = interleave_datasets if merge_method == "interleave" else concatenate_datasets
 
-            train_datasets = _merge_method([trim_dataset(d) for d in train_datasets])
-            eval_datasets = _merge_method([trim_dataset(d) for d in eval_datasets]) if eval_datasets else None
+            train_datasets = {"train": _merge_method([trim_dataset(d) for d in train_datasets])}
+            eval_datasets = _merge_method([trim_dataset(d) for d in eval_datasets]) if eval_datasets else {}
 
-        return (DatasetDict if not streaming else IterableDatasetDict)({
-            "train": train_datasets,
-            "validation": eval_datasets
-        })
+        return (DatasetDict if not streaming else IterableDatasetDict)(dict(**train_datasets, **eval_datasets))
 
     elif os.path.isdir(data_name_or_path):
         return load_from_disk(data_name_or_path)
