@@ -346,7 +346,7 @@ def main() -> None:
         tokenizer=tokenizer,
         args=training_args,
         train_dataset=dataset[data_args.train_split_name],
-        eval_dataset=dataset[data_args.eval_split_name],
+        eval_dataset=dataset[data_args.eval_split_name] if data_args.eval_split_name in dataset else None,
         data_collator=data_collator,
         callbacks=trainer_callbacks,
     )
