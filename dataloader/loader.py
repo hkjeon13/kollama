@@ -86,9 +86,13 @@ def load(
             from datasets import concatenate_datasets, interleave_datasets
             _merge_method = interleave_datasets if merge_method == "interleave" else concatenate_datasets
 
-            output = { "train": _merge_method([trim_dataset(d) for d in train_datasets]) }
+            train_datasets = _merge_method([trim_dataset(d) for d in train_datasets])
             if eval_datasets:
-                output["validation"] = _merge_method([trim_dataset(d) for d in eval_datasets])
+                eval_datasets = _merge_method([trim_dataset(d) for d in eval_datasets])
+
+        output = {"train": train_datasets}
+        if eval_datasets:
+            output["validation"] = eval_datasets
 
         return (DatasetDict if not streaming else IterableDatasetDict)(output)
 
