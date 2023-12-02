@@ -1,4 +1,5 @@
 import os
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Literal, Union
 
@@ -228,6 +229,7 @@ def main() -> None:
     :return:
 
     """
+    logging.basicConfig(level=logging.INFO)
 
     # 1. HfArgumentParser를 이용하여 모델, 데이터, 학습 파라미터를 파싱
     parser = HfArgumentParser(
@@ -236,6 +238,7 @@ def main() -> None:
 
     (model_args, data_args, training_args, lora_config,
      bnb_config, generation_args, slack_args) = parser.parse_args_into_dataclasses()
+
 
     os.environ["WANDB_PROJECT"] = model_args.wandb_project
 

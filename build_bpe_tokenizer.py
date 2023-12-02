@@ -39,6 +39,11 @@ class DataParams:
         metadata={"help": "The number of examples to use"},
     )
 
+    special_tokens: str = field(
+        default="<s>,<pad>,</s>,<unk>",
+        metadata={"help": "The special tokens to use"},
+    )
+
 
 def load_json(path: str):
     with open(path, "r", encoding="utf-8") as f:
@@ -56,7 +61,7 @@ def main():
     trainer = BpeTrainer(
         vocab_size=data_params.vocab_size,
         initial_alphabet=ByteLevel.alphabet(),
-        special_tokens=["<s>", "<pad>", "</s>", "<unk>"],
+        special_tokens=data_params.special_tokens.split(",")
     )
 
     dataset = load(
@@ -79,7 +84,7 @@ def main():
 
     tokenizer.train_from_iterator(
         _generator(),
-        trainer=trainer
+        trainer=trainer,
     )
 
     os.makedirs(data_params.output_dir, exist_ok=True)
