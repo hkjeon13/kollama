@@ -88,8 +88,7 @@ def main():
     )
 
     os.makedirs(data_params.output_dir, exist_ok=True)
-
-    tokenizer.save(os.path.join(data_params.output_dir, "tokenizer.json"))
+    tokenizer.save(data_params.output_dir)
 
 
 if __name__ == "__main__":
