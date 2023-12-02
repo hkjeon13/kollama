@@ -16,7 +16,7 @@ from transformers import (
 from dataloader import load
 from utils import get_tokenized_dataset, GenerationParams, get_callbacks, get_data_collator, get_special_tokens
 from utils.params import LoraParams, BnBParams, SlackParams
-
+from custom_llama import CustomLlamaForCausalLM
 
 @dataclass
 class ModelParams:
@@ -47,6 +47,11 @@ class ModelParams:
     wandb_project: str = field(
         default="kollama",
         metadata={"help": "The wandb project name"}
+    )
+
+    apply_meta_learning: bool = field(
+        default=False,
+        metadata={"help": "Whether to apply meta learning"}
     )
 
 
@@ -243,9 +248,10 @@ def main() -> None:
         use_auth_token=model_args.model_auth_token,
         **additional_config
     )
-
-    model_class = AutoModelForCausalLM \
-        if model_args.model_type == "causal" else AutoModelForSeq2SeqLM
+    if model_args.model_type == "causal":
+        model_class = AutoModelForCausalLM if not model_args.apply_meta_learning else CustomLlamaForCausalLM
+    else:
+        model_class = AutoModelForSeq2SeqLM
 
     model = model_class.from_pretrained(
         model_args.model_name_or_path,
