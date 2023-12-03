@@ -125,9 +125,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
             loss = loss_fct(shift_logits, shift_labels)
 
             meta_score = self.recognition_head(hidden_states)
-            meta_loss = loss_fct(meta_score.view(-1, 1), F.cross_entropy(shift_logits, shift_labels, reduction='mean'))
-
-            loss = loss + meta_loss.mean()
+            loss = loss + (loss - meta_score.mean())**2
 
         if not return_dict:
             output = (logits,) + outputs[1:]
