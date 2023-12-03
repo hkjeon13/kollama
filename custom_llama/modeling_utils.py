@@ -111,18 +111,22 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
 
         loss = None
         if labels is not None:
-            meta_score = self.recognition_head(hidden_states)
             # Shift so that tokens < n predict n
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
+
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
+
             shift_logits = shift_logits.view(-1, self.config.vocab_size)
             shift_labels = shift_labels.view(-1)
             # Enable model parallelism
             shift_labels = shift_labels.to(shift_logits.device)
             loss = loss_fct(shift_logits, shift_labels)
-            meta_loss = loss_fct(meta_score.view(-1, 1), F.cross_entropy(shift_logits, shift_labels, reduction='sum'))
+
+            meta_score = self.recognition_head(shift_logits)
+            meta_loss = loss_fct(meta_score.view(-1, 1), F.cross_entropy(shift_logits, shift_labels, reduction='mean'))
+
             loss = loss + meta_loss.mean()
 
         if not return_dict:
