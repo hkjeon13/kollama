@@ -284,7 +284,6 @@ def main() -> None:
         training_args.optim = "paged_adamw_32bit"
 
     print(model)
-    raise ValueError
     # 3. 데이터셋을 불러옴
     dataset = load(
         data_name_or_path=data_args.data_name_or_path,
