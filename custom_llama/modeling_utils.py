@@ -17,7 +17,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
         self.model = LlamaModel(config)
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        self.recognition_head = nn.Linear(config.hidden_size,1, bias=False)
+        self.recognition_head = nn.Linear(config.hidden_size-1,1, bias=False)
         # Initialize weights and apply final processing
         self.post_init()
 
