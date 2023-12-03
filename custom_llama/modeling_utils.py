@@ -122,7 +122,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
             # Enable model parallelism
             shift_labels = shift_labels.to(shift_logits.device)
             loss = loss_fct(shift_logits, shift_labels)
-            meta_loss = loss_fct(meta_score.view(-1,1), F.cross_entropy(shift_logits, shift_labels, reduction='none'))
+            meta_loss = loss_fct(meta_score.view(-1, 1), F.cross_entropy(shift_logits, shift_labels, reduction='sum'))
             loss = loss + meta_loss.mean()
 
         if not return_dict:
