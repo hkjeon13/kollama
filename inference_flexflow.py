@@ -1,3 +1,8 @@
+"""
+This script is used to inference with FlexFlow.
+"""
+import time
+
 from dataclasses import dataclass, field
 from inspect import signature
 
@@ -9,6 +14,9 @@ from utils import GenerationParams
 
 @dataclass
 class ModelParams:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
     llm_name_or_path: str = field(
         default="psyche/kollama2-7b-v2",
         metadata={"help": "The model checkpoint for weights initialization."},
@@ -22,6 +30,9 @@ class ModelParams:
 
 @dataclass
 class EnvParams:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
     num_gpus: int = field(
         default=1,
         metadata={"help": "The number of GPUs to use."},
@@ -38,9 +49,15 @@ class EnvParams:
     )
 
 
-def main():
-    parser = HfArgumentParser((ModelParams, EnvParams, GenerationParams))
-    model_args, env_args, generation_args = parser.parse_args_into_dataclasses()
+def main(model_args, env_args, generation_args):
+    """
+    Uploads a model to the HuggingFace Hub.
+    1. Load the model
+    2. Load the SSM
+    3. Compile the model
+    4. Compile the SSM
+    5. Inference
+    """
 
     ff.init(
         num_gpus=env_args.num_gpus,
@@ -67,7 +84,6 @@ def main():
 
     model.compile(generation_config, ssms=ssms)
 
-    import time
 
     while True:
         input_text = input("Input: ")
@@ -76,8 +92,9 @@ def main():
         start = time.time()
         output = model.generate(input_text)
         print("Output:", output)
-        print("Time:{:.2f} s".format(time.time() - start))
+        print(f"Time:{time.time() - start:.2f} s")
 
 
 if __name__ == "__main__":
-    main()
+    parser = HfArgumentParser((ModelParams, EnvParams, GenerationParams))
+    main(*parser.parse_args_into_dataclasses())

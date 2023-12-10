@@ -1,9 +1,13 @@
-import os
+"""
+Train a model on a dataset.
+"""
 import logging
+import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Literal, Union
+from typing import Any, Dict, Optional, Literal, Union, Type
 
 import datasets
+import torch
 from transformers import (
     HfArgumentParser,
     TrainingArguments,
@@ -11,16 +15,27 @@ from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
-    PreTrainedTokenizer
+    PreTrainedTokenizer,
+    BitsAndBytesConfig
 )
 
-from dataloader import load
-from utils import get_tokenized_dataset, GenerationParams, get_callbacks, get_data_collator, get_special_tokens
-from utils.params import LoraParams, BnBParams, SlackParams
 from custom_llama import CustomLlamaForCausalLM
+from dataloader import load
+from utils import (
+    get_tokenized_dataset,
+    get_callbacks,
+    get_data_collator,
+    get_special_tokens
+)
+from utils.lora_utils import get_lora_model
+from utils.params import LoraParams, BnBParams, SlackParams
+
 
 @dataclass
 class ModelParams:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
     model_name_or_path: str = field(
         metadata={"help": "The model name or path"}
     )
@@ -58,6 +73,9 @@ class ModelParams:
 
 @dataclass
 class DataParams:
+    """
+    Arguments pertaining to which dataset we are going to use.
+    """
     data_name_or_path: str = field(
         metadata={"help": "The data name or path"}
     )
@@ -65,16 +83,6 @@ class DataParams:
     data_auth_token: Optional[str] = field(
         default=None,
         metadata={"help": "The data auth token"}
-    )
-
-    max_input_length: int = field(
-        default=1024,
-        metadata={"help": "The maximum total input sequence length after tokenization"}
-    )
-
-    max_output_length: int = field(
-        default=1024,
-        metadata={"help": "The maximum total output sequence length after tokenization"}
     )
 
     train_split_name: str = field(
@@ -85,6 +93,26 @@ class DataParams:
     eval_split_name: str = field(
         default="validation",
         metadata={"help": "The name of eval split"}
+    )
+
+    input_column_name: str = field(
+        default="input",
+        metadata={"help": "The column to choose from the dataset"}
+    )
+
+    output_column_name: str = field(
+        default="output",
+        metadata={"help": "The column to reject from the dataset"}
+    )
+
+    max_input_length: int = field(
+        default=1024,
+        metadata={"help": "The maximum total input sequence length after tokenization"}
+    )
+
+    max_output_length: int = field(
+        default=1024,
+        metadata={"help": "The maximum total output sequence length after tokenization"}
     )
 
     is_supervised_dataset: bool = field(
@@ -107,6 +135,12 @@ class DataParams:
         metadata={"help": "The number of eval samples to use"}
     )
 
+
+@dataclass
+class ProcessParams:
+    """
+    Arguments pertaining to preprocessing.
+    """
     prefix: str = field(
         default="",
         metadata={"help": "The prefix to add to the input"}
@@ -115,16 +149,6 @@ class DataParams:
     suffix: str = field(
         default="",
         metadata={"help": "The suffix to add to the input"}
-    )
-
-    input_column_name: str = field(
-        default="input",
-        metadata={"help": "The column to choose from the dataset"}
-    )
-
-    output_column_name: str = field(
-        default="output",
-        metadata={"help": "The column to reject from the dataset"}
     )
 
     group_task: bool = field(
@@ -196,9 +220,6 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
     """
     additional_config = {}
     if bnb_config.apply_4bit_training:
-        import torch
-        from transformers import BitsAndBytesConfig
-
         compute_dtype = getattr(torch, bnb_config.bnb_4bit_compute_dtype)
 
         bnb_config = BitsAndBytesConfig(
@@ -213,7 +234,93 @@ def get_bnb_config(bnb_config: BnBParams) -> Dict[str, Any]:
     return additional_config
 
 
-def main() -> None:
+def get_model_class(
+        model_type: str,
+        apply_meta_learning: bool = False
+) -> Type[AutoModelForSeq2SeqLM | CustomLlamaForCausalLM | AutoModelForCausalLM]:
+    """
+    Get model class from model type
+    :param model_type: Model type
+    :param apply_meta_learning: Whether to apply meta learning
+    :return:
+    >>> get_model_class("causal", apply_meta_learning=False).__name__
+    'AutoModelForCausalLM'
+    >>> get_model_class("causal", apply_meta_learning=True).__name__
+    'CustomLlamaForCausalLM'
+    >>> get_model_class("seq2seq").__name__
+    'AutoModelForSeq2SeqLM'
+    """
+    model_class = None
+    if model_type == "causal":
+        model_class = CustomLlamaForCausalLM if apply_meta_learning else AutoModelForCausalLM
+    elif model_type == "seq2seq":
+        model_class = AutoModelForSeq2SeqLM
+
+    if model_class is None:
+        raise ValueError(f"model type {model_type} is not supported")
+
+    return model_class
+
+
+def add_additional_tokens(
+        tokenizer: PreTrainedTokenizer,
+        add_pad_token: bool = False
+) -> PreTrainedTokenizer:
+    """
+    Add additional tokens to tokenizer
+    :param tokenizer: PreTrainedTokenizer
+    :param add_pad_token: Whether to add pad token
+    :return: PreTrainedTokenizer with additional tokens
+    """
+    if add_pad_token:
+        _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
+        tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
+        print(f"pad token is changed to {_sample_sp_token}(special token)")
+
+    else:
+        if "eos_token" in tokenizer.special_tokens_map:
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            print(f"pad token is changed to {tokenizer.eos_token}(eos token)")
+        else:
+            raise ValueError("pad token is not in the tokenizer")
+
+    return tokenizer
+
+def sampling_dataset(
+        dataset: datasets.DatasetDict,
+        train_split_name: str,
+        eval_split_name: Optional[str] = None,
+        train_samples: Optional[int] = None,
+        eval_samples: Optional[int] = None
+)-> datasets.DatasetDict:
+    """
+    데이터셋의 일부만 사용할 경우 일부만 사용
+    :param dataset: dataset
+    :param train_split_name: train split name
+    :param eval_split_name: eval split name
+    :param train_samples: train samples
+    :param eval_samples: eval samples
+    :return: dataset
+    """
+    if train_samples is not None:
+        dataset[train_split_name] = dataset[train_split_name].select(range(train_samples))
+
+    if eval_split_name in dataset and eval_samples is not None:
+        dataset[eval_split_name] = dataset[eval_split_name].select(range(eval_samples))
+
+    return dataset
+
+
+def main(
+        model_args: ModelParams,
+        data_args: DataParams,
+        process_args: ProcessParams,
+        training_args: TrainingArguments,
+        lora_config: LoraParams,
+        bnb_config: BnBParams,
+        slack_args: SlackParams
+) -> None:
     """
     학습을 실행하는 메인 함수
     * 학습 과정
@@ -232,12 +339,6 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO)
 
     # 1. HfArgumentParser를 이용하여 모델, 데이터, 학습 파라미터를 파싱
-    parser = HfArgumentParser(
-        (ModelParams, DataParams, TrainingArguments, LoraParams, BnBParams, GenerationParams, SlackParams)
-    )
-
-    (model_args, data_args, training_args, lora_config,
-     bnb_config, generation_args, slack_args) = parser.parse_args_into_dataclasses()
 
 
     os.environ["WANDB_PROJECT"] = model_args.wandb_project
@@ -251,34 +352,22 @@ def main() -> None:
         use_auth_token=model_args.model_auth_token,
         **additional_config
     )
-    if model_args.model_type == "causal":
-        model_class = AutoModelForCausalLM if not model_args.apply_meta_learning else CustomLlamaForCausalLM
-    else:
-        model_class = AutoModelForSeq2SeqLM
 
-    model = model_class.from_pretrained(
+    model = get_model_class(model_args.model_type).from_pretrained(
         model_args.model_name_or_path,
         revision=model_args.revision,
         use_auth_token=model_args.model_auth_token
     )
 
     if lora_config.apply_lora:
-        from utils.lora_utils import get_lora_model
-        model = get_lora_model(model=model, lora_config=lora_config, model_type=model_args.model_type)
+        model = get_lora_model(
+            model=model,
+            lora_config=lora_config,
+            model_type=model_args.model_type
+        )
 
-    if model_args.add_pad_token:
-        _sample_sp_token = list(tokenizer.special_tokens_map.values())[0]
-        tokenizer.add_special_tokens({"pad_token": get_special_tokens(_sample_sp_token, "pad")})
-        model.resize_token_embeddings(len(tokenizer))
-        print(f"pad token is changed to {_sample_sp_token}(special token)")
-
-    else:
-        if "eos_token" in tokenizer.special_tokens_map:
-            tokenizer.pad_token = tokenizer.eos_token
-            tokenizer.pad_token_id = tokenizer.eos_token_id
-            print(f"pad token is changed to {tokenizer.eos_token}(eos token)")
-        else:
-            raise ValueError("pad token is not in the tokenizer")
+    tokenizer = add_additional_tokens(tokenizer, model_args.add_pad_token)
+    model.resize_token_embeddings(len(tokenizer))
 
     if bnb_config.apply_4bit_training:
         training_args.optim = "paged_adamw_32bit"
@@ -290,10 +379,10 @@ def main() -> None:
         data_auth_token=data_args.data_auth_token,
         streaming=data_args.streaming,
         is_supervised_dataset=data_args.is_supervised_dataset,
-        group_task=data_args.group_task,
-        merging_method=data_args.merging_method,
-        shuffle=data_args.do_shuffle,
-        num_proc=data_args.num_proc,
+        group_task=process_args.group_task,
+        merging_method=process_args.merging_method,
+        shuffle=process_args.do_shuffle,
+        num_proc=process_args.num_proc,
     )
     ## 데이터셋을 토크나이징
     if data_args.train_split_name in dataset:
@@ -305,11 +394,11 @@ def main() -> None:
             model_type=model_args.model_type,
             max_input_length=data_args.max_input_length,
             max_output_length=data_args.max_output_length,
-            prefix=data_args.prefix,
-            suffix=data_args.suffix,
+            prefix=process_args.prefix,
+            suffix=process_args.suffix,
             is_train=True,
             remove_columns=True,
-            group_by_length=data_args.group_texts,
+            group_by_length=process_args.group_texts,
         )
 
     if data_args.eval_split_name in dataset:
@@ -321,17 +410,20 @@ def main() -> None:
             model_type=model_args.model_type,
             max_input_length=data_args.max_input_length,
             max_output_length=data_args.max_output_length,
-            prefix=data_args.prefix,
-            suffix=data_args.suffix,
+            prefix=process_args.prefix,
+            suffix=process_args.suffix,
             is_train=False,
             remove_columns=True
         )
-    ## 데이터셋의 일부만 사용할 경우 일부만 사용
-    if data_args.train_samples is not None:
-        dataset[data_args.train_split_name] = dataset[data_args.train_split_name].select(range(data_args.train_samples))
 
-    if data_args.eval_samples is not None:
-        dataset[data_args.eval_split_name] = dataset[data_args.eval_split_name].select(range(data_args.eval_samples))
+    ## 데이터셋의 일부만 사용할 경우 일부만 사용
+    dataset = sampling_dataset(
+        dataset=dataset,
+        train_split_name=data_args.train_split_name,
+        eval_split_name=data_args.eval_split_name,
+        train_samples=data_args.train_samples,
+        eval_samples=data_args.eval_samples
+    )
 
     trainer_callbacks = get_callbacks(
         use_slack_notifier=slack_args.use_slack_notifier,
@@ -348,16 +440,15 @@ def main() -> None:
         print("\n\n***** Eval dataset samples *****")
         print_dataset_samples(tokenizer, dataset[data_args.eval_split_name], num_samples=3)
 
-    data_collator = get_data_collator(model, tokenizer, model_args)
-
     # 4. Trainer를 이용하여 학습
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
         args=training_args,
         train_dataset=dataset[data_args.train_split_name],
-        eval_dataset=dataset[data_args.eval_split_name] if data_args.eval_split_name in dataset else None,
-        data_collator=data_collator,
+        eval_dataset=dataset[data_args.eval_split_name]
+        if data_args.eval_split_name in dataset else None,
+        data_collator=get_data_collator(model, tokenizer, model_args),
         callbacks=trainer_callbacks,
     )
 
@@ -365,11 +456,15 @@ def main() -> None:
         trainer.train()
 
     elif training_args.do_eval:
-        result = trainer.evaluate()
         print("***** Eval results *****")
-        for key, value in result.items():
+        for key, value in trainer.evaluate().items():
             print(f"  {key} = {value:.3f}")
 
 
 if __name__ == "__main__":
-    main()
+    parser = HfArgumentParser((
+        ModelParams, DataParams, ProcessParams,
+        TrainingArguments, LoraParams, BnBParams, SlackParams
+    ))
+
+    main(*parser.parse_args_into_dataclasses())

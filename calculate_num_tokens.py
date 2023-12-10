@@ -1,3 +1,6 @@
+"""
+Calculate the number of tokens in the dataset
+"""
 from dataclasses import dataclass, field
 from multiprocessing import cpu_count
 
@@ -8,6 +11,9 @@ from dataloader.loader import load
 
 @dataclass
 class DataArguments:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
     data_name_or_path: str = field(
         default="data_info_local.json",
         metadata={"help": "Path to dataset info file"},
@@ -25,9 +31,14 @@ class DataArguments:
 
 
 def main():
+    """
+    Uploads a model to the HuggingFace Hub.
+    1. load dataset
+    2. calculate the number of tokens
+    """
     parser = HfArgumentParser((DataArguments,))
-
     data_args = parser.parse_args_into_dataclasses()[0]
+
     dataset = load(
         data_name_or_path=data_args.data_name_or_path,
         streaming=False,

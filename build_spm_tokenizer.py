@@ -1,3 +1,6 @@
+"""
+Script to build a SentencePiece tokenizer from a dataset.
+"""
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -9,6 +12,9 @@ from train import load
 
 @dataclass
 class BuildingParams:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
     model_prefix: str = field(
         default="llama",
         metadata={"help": "The output directory"},
@@ -27,6 +33,9 @@ class BuildingParams:
 
 @dataclass
 class DataPrams:
+    """
+    Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
+    """
     data_info_path: str = field(
         default="data_info_local.json",
         metadata={"help": "데이터셋 정보가 담긴 json 파일의 경로를 설정합니다."}
@@ -43,9 +52,13 @@ class DataPrams:
     )
 
 
-def main():
-    parser = HfArgumentParser((BuildingParams, DataPrams))
-    building_params, data_params = parser.parse_args_into_dataclasses()
+def main(building_params, data_params):
+    """
+    Uploads a model to the HuggingFace Hub.
+    1. load dataset
+    2. train tokenizer
+    """
+
 
     dataset = load(
         data_name_or_path=data_params.data_info_path,
@@ -76,4 +89,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = HfArgumentParser((BuildingParams, DataPrams))
+    main(*parser.parse_args_into_dataclasses())
