@@ -95,7 +95,6 @@ def get_tokenized_dataset(
     length_for_group = max_input_length - prefix_length - suffix_length
 
     def tokenize_function(examples):
-        print(examples)
         inputs, outputs = [], []
         examples[input_column] = [
             prefix + input_text + suffix

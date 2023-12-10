@@ -386,6 +386,7 @@ def main(
     )
     ## 데이터셋을 토크나이징
     if data_args.train_split_name in dataset:
+        print(next(iter(dataset[data_args.train_split_name])))
         dataset[data_args.train_split_name] = get_tokenized_dataset(
             dataset=dataset[data_args.train_split_name],
             input_column=data_args.input_column_name,
@@ -402,6 +403,7 @@ def main(
         )
 
     if data_args.eval_split_name in dataset:
+        print(next(iter(dataset[data_args.eval_split_name])))
         dataset[data_args.eval_split_name] = get_tokenized_dataset(
             dataset=dataset[data_args.eval_split_name],
             input_column=data_args.input_column_name,
