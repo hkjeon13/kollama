@@ -1,12 +1,13 @@
-from transformers import LlamaPreTrainedModel, LlamaModel
+from typing import Optional, Tuple, Union, List
+
+import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.nn import CrossEntropyLoss
+from transformers import LlamaPreTrainedModel, LlamaModel
 from transformers.file_utils import add_start_docstrings_to_model_forward, replace_return_docstrings
 from transformers.modeling_outputs import CausalLMOutputWithPast
-from typing import Optional, Tuple, Union, List
 from transformers.models.llama.modeling_llama import LLAMA_INPUTS_DOCSTRING, _CONFIG_FOR_DOC
-import torch.nn.functional as F
-import torch
 
 
 class CustomLlamaForCausalLM(LlamaPreTrainedModel):
@@ -17,7 +18,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
         self.model = LlamaModel(config)
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        self.recognition_head = nn.Linear(config.hidden_size,1, bias=False)
+        self.recognition_head = nn.Linear(config.hidden_size, 1, bias=False)
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -42,17 +43,17 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
     @add_start_docstrings_to_model_forward(LLAMA_INPUTS_DOCSTRING)
     @replace_return_docstrings(output_type=CausalLMOutputWithPast, config_class=_CONFIG_FOR_DOC)
     def forward(
-        self,
-        input_ids: torch.LongTensor = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        position_ids: Optional[torch.LongTensor] = None,
-        past_key_values: Optional[List[torch.FloatTensor]] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
-        use_cache: Optional[bool] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
+            self,
+            input_ids: torch.LongTensor = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_values: Optional[List[torch.FloatTensor]] = None,
+            inputs_embeds: Optional[torch.FloatTensor] = None,
+            labels: Optional[torch.LongTensor] = None,
+            use_cache: Optional[bool] = None,
+            output_attentions: Optional[bool] = None,
+            output_hidden_states: Optional[bool] = None,
+            return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
         r"""
         Args:
@@ -125,7 +126,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
             loss = loss_fct(shift_logits, shift_labels)
 
             meta_score = self.recognition_head(hidden_states)
-            loss = loss + (loss - meta_score.mean())**2
+            loss = loss + (loss - meta_score.mean()) ** 2
 
         if not return_dict:
             output = (logits,) + outputs[1:]
@@ -140,7 +141,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
         )
 
     def prepare_inputs_for_generation(
-        self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
+            self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
     ):
         if past_key_values is not None:
             past_length = past_key_values[0][0].shape[2]
@@ -160,7 +161,7 @@ class CustomLlamaForCausalLM(LlamaPreTrainedModel):
             position_ids = attention_mask.long().cumsum(-1) - 1
             position_ids.masked_fill_(attention_mask == 0, 1)
             if past_key_values:
-                position_ids = position_ids[:, -input_ids.shape[1] :]
+                position_ids = position_ids[:, -input_ids.shape[1]:]
 
         # if `inputs_embeds` are passed, we only want to use them in the 1st generation step
         if inputs_embeds is not None and past_key_values is None:

@@ -2,7 +2,6 @@
 This script is used to inference with FlexFlow.
 """
 import time
-
 from dataclasses import dataclass, field
 from inspect import signature
 
@@ -83,7 +82,6 @@ def main(model_args, env_args, generation_args):
         ssm.compile(generation_config)
 
     model.compile(generation_config, ssms=ssms)
-
 
     while True:
         input_text = input("Input: ")

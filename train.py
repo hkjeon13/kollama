@@ -287,13 +287,14 @@ def add_additional_tokens(
 
     return tokenizer
 
+
 def sampling_dataset(
         dataset: datasets.DatasetDict,
         train_split_name: str,
         eval_split_name: Optional[str] = None,
         train_samples: Optional[int] = None,
         eval_samples: Optional[int] = None
-)-> datasets.DatasetDict:
+) -> datasets.DatasetDict:
     """
     데이터셋의 일부만 사용할 경우 일부만 사용
     :param dataset: dataset
@@ -339,7 +340,6 @@ def main(
     logging.basicConfig(level=logging.INFO)
 
     # 1. HfArgumentParser를 이용하여 모델, 데이터, 학습 파라미터를 파싱
-
 
     os.environ["WANDB_PROJECT"] = model_args.wandb_project
 

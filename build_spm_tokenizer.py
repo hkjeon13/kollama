@@ -59,7 +59,6 @@ def main(building_params, data_params):
     2. train tokenizer
     """
 
-
     dataset = load(
         data_name_or_path=data_params.data_info_path,
         data_auth_token=None,
